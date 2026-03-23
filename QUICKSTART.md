@@ -1,6 +1,6 @@
-# 86Web — Quick Start Guide
+# Sphere86 — Quick Start Guide
 
-Get 86Web up and running in under 5 minutes.
+Get Sphere86 up and running in under 5 minutes.
 
 ---
 
@@ -17,8 +17,8 @@ Get 86Web up and running in under 5 minutes.
 ### 1. Clone the repository
 
 ```bash
-git clone <repo> /srv/86web
-cd /srv/86web
+git clone <repo> /srv/Sphere86
+cd /srv/Sphere86
 ```
 
 ### 2. Create a service user
@@ -26,14 +26,14 @@ cd /srv/86web
 Create a dedicated system user and group so containers don't run as your personal account:
 
 ```bash
-sudo groupadd -r 86web
-sudo useradd -r -g 86web -s /usr/sbin/nologin -d /srv/86web 86web
+sudo groupadd -r Sphere86
+sudo useradd -r -g Sphere86 -s /usr/sbin/nologin -d /srv/Sphere86 Sphere86
 ```
 
 Note the UID and GID — you'll need them for the next step:
 
 ```bash
-id 86web    # e.g. uid=990(86web) gid=990(86web)
+id Sphere86    # e.g. uid=990(Sphere86) gid=990(Sphere86)
 ```
 
 ### 3. Create your `.env` file
@@ -46,8 +46,8 @@ Open `.env` in your editor and set at minimum:
 
 | Variable | What to set |
 |---|---|
-| `PUID` | UID of the `86web` user (from `id 86web`) |
-| `PGID` | GID of the `86web` group (from `id 86web`) |
+| `PUID` | UID of the `Sphere86` user (from `id Sphere86`) |
+| `PGID` | GID of the `Sphere86` group (from `id Sphere86`) |
 | `ADMIN_PASSWORD` | A strong password for the admin account |
 | `APP_SECRET_KEY` | A long random string (keeps sessions alive across restarts) |
 
@@ -99,7 +99,7 @@ Log in with:
 
 ## Optional: macvlan (LAN IP)
 
-Give 86Web its own IP address on your local network — no port forwarding required:
+Give Sphere86 its own IP address on your local network — no port forwarding required:
 
 ```bash
 docker network create -d macvlan \

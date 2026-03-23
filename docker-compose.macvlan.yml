@@ -1,5 +1,5 @@
 # =============================================================================
-# 86Web — macvlan override
+# Sphere86 — macvlan override
 # Usage: docker compose -f docker-compose.yml -f docker-compose.macvlan.yml up -d
 #
 # Prerequisites:

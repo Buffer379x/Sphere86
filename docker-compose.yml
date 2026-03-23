@@ -1,7 +1,9 @@
 # =============================================================================
-# 86Web — Docker Compose (default: bridge network, port-exposed)
+# Sphere86 — Docker Compose (default: bridge network, port-exposed)
 # For macvlan, use: docker compose -f docker-compose.yml -f docker-compose.macvlan.yml up
 # =============================================================================
+
+name: sphere86
 
 networks:
   private:
@@ -13,13 +15,14 @@ services:
   # Nginx — public-facing reverse proxy + static frontend
   # ---------------------------------------------------------------------------
   web:
+    image: sphere86-web
     build:
-      context: ./frontend
+      context: ./web
       dockerfile: Dockerfile
       args:
         - VITE_AUDIO_BUFFER_SECS=${AUDIO_BUFFER_SECS:-0.2}
       network: host
-    container_name: 86web-nginx
+    container_name: Sphere86-nginx
     restart: unless-stopped
     ports:
       - "${WEB_PORT:-80}:80"
@@ -36,9 +39,9 @@ services:
       engine:
         condition: service_healthy
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/templates:/etc/nginx/86web-templates:ro
-      - ${SSL_CERTS_DIR:-./nginx/certs}:/etc/nginx/certs:ro
+      - ./web/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./web/nginx/templates:/etc/nginx/Sphere86-templates:ro
+      - ${SSL_CERTS_DIR:-./web/nginx/certs}:/etc/nginx/certs:ro
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost/ > /dev/null || exit 1"]
       interval: 10s
@@ -50,12 +53,13 @@ services:
   # Engine — FastAPI (API server) + Runner (86Box processes, VNC)
   # ---------------------------------------------------------------------------
   engine:
+    image: sphere86-engine
     platform: linux/amd64
     build:
-      context: .
-      dockerfile: engine/Dockerfile
+      context: ./engine
+      dockerfile: Dockerfile
       network: host
-    container_name: 86web-engine
+    container_name: Sphere86-engine
     restart: unless-stopped
     environment:
       - APP_SECRET_KEY=${APP_SECRET_KEY:-changeme_secret}
