@@ -28,6 +28,8 @@ class UserBase(BaseModel):
     is_active: bool = True
     can_manage_vms: bool = False
     can_manage_groups: bool = False
+    can_access_library: bool = False
+    can_upload_images: bool = False
     max_vms: int = 10
     max_storage_gb: int = 100
 
@@ -40,6 +42,8 @@ class UserUpdate(BaseModel):
     is_active: Optional[bool] = None
     can_manage_vms: Optional[bool] = None
     can_manage_groups: Optional[bool] = None
+    can_access_library: Optional[bool] = None
+    can_upload_images: Optional[bool] = None
     max_vms: Optional[int] = None
     max_storage_gb: Optional[int] = None
     password: Optional[str] = None

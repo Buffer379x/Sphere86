@@ -59,6 +59,8 @@ async def create_user(
         max_storage_gb=body.max_storage_gb,
         can_manage_vms=body.can_manage_vms if body.can_manage_vms is not None else body.is_admin,
         can_manage_groups=body.can_manage_groups if body.can_manage_groups is not None else body.is_admin,
+        can_access_library=body.can_access_library if body.can_access_library is not None else body.is_admin,
+        can_upload_images=body.can_upload_images if body.can_upload_images is not None else body.is_admin,
     )
     db.add(user)
     db.commit()
@@ -113,6 +115,10 @@ async def update_user(
         user.can_manage_vms = body.can_manage_vms
     if body.can_manage_groups is not None:
         user.can_manage_groups = body.can_manage_groups
+    if body.can_access_library is not None:
+        user.can_access_library = body.can_access_library
+    if body.can_upload_images is not None:
+        user.can_upload_images = body.can_upload_images
     if body.max_vms is not None:
         user.max_vms = body.max_vms
     if body.max_storage_gb is not None:
