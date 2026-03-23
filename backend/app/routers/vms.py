@@ -4,6 +4,7 @@ import shutil
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 
 log = logging.getLogger("Sphere86")
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime
@@ -35,6 +36,7 @@ def _vm_to_response(vm: VM) -> VMResponse:
     if vm.group:
         resp.group_name = vm.group.name
         resp.group_color = vm.group.color
+    resp.shared_with_user_ids = [u.id for u in vm.shared_with]
     return resp
 
 
@@ -42,6 +44,7 @@ def _group_to_response(g: VMGroup) -> VMGroupResponse:
     resp = VMGroupResponse.model_validate(g)
     resp.vm_count = len(g.vms)
     resp.has_running_vms = any(vm.status == "running" for vm in g.vms)
+    resp.shared_with_user_ids = [u.id for u in g.shared_with]
     return resp
 
 
@@ -52,7 +55,12 @@ async def list_groups(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    groups = db.query(VMGroup).filter(VMGroup.user_id == current_user.id).all()
+    groups = db.query(VMGroup).filter(
+        or_(
+            VMGroup.user_id == current_user.id,
+            VMGroup.shared_with.any(User.id == current_user.id)
+        )
+    ).all()
     return [_group_to_response(g) for g in groups]
 
 
@@ -69,6 +77,10 @@ async def create_group(
         network_enabled=body.network_enabled,
         user_id=current_user.id,
     )
+    if body.shared_with_user_ids is not None:
+        users = db.query(User).filter(User.id.in_(body.shared_with_user_ids)).all()
+        group.shared_with = users
+
     db.add(group)
     db.commit()
     db.refresh(group)
@@ -82,9 +94,12 @@ async def update_group(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    group = db.query(VMGroup).filter(VMGroup.id == group_id, VMGroup.user_id == current_user.id).first()
+    group = db.query(VMGroup).filter(VMGroup.id == group_id).first()
     if not group:
         raise HTTPException(404, "Group not found")
+    if group.user_id != current_user.id:
+        raise HTTPException(403, "Not authorized to modify this group")
+
     if body.name is not None:
         group.name = body.name
     if body.description is not None:
@@ -96,6 +111,10 @@ async def update_group(
             if any(vm.status == "running" for vm in group.vms):
                 raise HTTPException(400, "Cannot change networking while a VM in the group is running. Stop all VMs first.")
         group.network_enabled = body.network_enabled
+    if body.shared_with_user_ids is not None:
+        users = db.query(User).filter(User.id.in_(body.shared_with_user_ids)).all()
+        group.shared_with = users
+
     db.commit()
     db.refresh(group)
     return _group_to_response(group)
@@ -107,9 +126,11 @@ async def delete_group(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    group = db.query(VMGroup).filter(VMGroup.id == group_id, VMGroup.user_id == current_user.id).first()
+    group = db.query(VMGroup).filter(VMGroup.id == group_id).first()
     if not group:
         raise HTTPException(404, "Group not found")
+    if group.user_id != current_user.id:
+        raise HTTPException(403, "Not authorized to delete this group")
     # Unlink VMs from group
     for vm in group.vms:
         vm.group_id = None
@@ -125,7 +146,12 @@ async def list_vms(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    query = db.query(VM).filter(VM.user_id == current_user.id)
+    query = db.query(VM).filter(
+        or_(
+            VM.user_id == current_user.id,
+            VM.shared_with.any(User.id == current_user.id)
+        )
+    )
     if group_id is not None:
         query = query.filter(VM.group_id == group_id)
     vms = query.order_by(VM.name).all()
@@ -163,6 +189,10 @@ async def create_vm(
         config=body.config.model_dump(),
         status="stopped",
     )
+    if body.shared_with_user_ids is not None:
+        users = db.query(User).filter(User.id.in_(body.shared_with_user_ids)).all()
+        vm.shared_with = users
+
     db.add(vm)
     db.commit()
     db.refresh(vm)
@@ -199,7 +229,7 @@ async def get_vm(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    vm = db.query(VM).filter(VM.id == vm_id, VM.user_id == current_user.id).first()
+    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
     if not vm:
         raise HTTPException(404, "VM not found")
     return _vm_to_response(vm)
@@ -241,6 +271,10 @@ async def update_vm(
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to write config: {e}")
 
+    if body.shared_with_user_ids is not None:
+        users = db.query(User).filter(User.id.in_(body.shared_with_user_ids)).all()
+        vm.shared_with = users
+
     db.commit()
     db.refresh(vm)
     return _vm_to_response(vm)
@@ -275,7 +309,7 @@ async def start_vm(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    vm = db.query(VM).filter(VM.id == vm_id, VM.user_id == current_user.id).first()
+    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
     if not vm:
         raise HTTPException(404, "VM not found")
     if vm.status in ("running", "paused", "starting"):
@@ -330,7 +364,7 @@ async def stop_vm(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    vm = db.query(VM).filter(VM.id == vm_id, VM.user_id == current_user.id).first()
+    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
     if not vm:
         raise HTTPException(404, "VM not found")
     if vm.status not in ("running", "paused"):
@@ -354,7 +388,7 @@ async def reset_vm(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    vm = db.query(VM).filter(VM.id == vm_id, VM.user_id == current_user.id).first()
+    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
     if not vm:
         raise HTTPException(404, "VM not found")
     if vm.status != "running":
@@ -372,7 +406,7 @@ async def pause_vm(
     current_user: User = Depends(get_current_user),
 ):
     """Toggle pause — SIGSTOP/SIGCONT the 86Box process."""
-    vm = db.query(VM).filter(VM.id == vm_id, VM.user_id == current_user.id).first()
+    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
     if not vm:
         raise HTTPException(404, "VM not found")
     if vm.status not in ("running", "paused"):
@@ -392,7 +426,7 @@ async def send_key(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    vm = db.query(VM).filter(VM.id == vm_id, VM.user_id == current_user.id).first()
+    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
     if not vm:
         raise HTTPException(404, "VM not found")
     key = body.get("key", "")
@@ -411,7 +445,7 @@ async def get_vm_status(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    vm = db.query(VM).filter(VM.id == vm_id, VM.user_id == current_user.id).first()
+    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
     if not vm:
         raise HTTPException(404, "VM not found")
 
@@ -756,7 +790,7 @@ async def list_media(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    vm = db.query(VM).filter(VM.id == vm_id, VM.user_id == current_user.id).first()
+    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
     if not vm:
         raise HTTPException(404, "VM not found")
     files = []
@@ -785,7 +819,7 @@ async def upload_media(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    vm = db.query(VM).filter(VM.id == vm_id, VM.user_id == current_user.id).first()
+    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
     if not vm:
         raise HTTPException(404, "VM not found")
     if _enforce_quotas(db):
@@ -812,7 +846,7 @@ async def delete_media(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    vm = db.query(VM).filter(VM.id == vm_id, VM.user_id == current_user.id).first()
+    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
     if not vm:
         raise HTTPException(404, "VM not found")
     safe_name = os.path.basename(filename)
@@ -837,7 +871,7 @@ async def mount_drive(
 ):
     if drive_key not in _VALID_DRIVE_KEYS:
         raise HTTPException(400, f"Invalid drive key. Valid: {sorted(_VALID_DRIVE_KEYS)}")
-    vm = db.query(VM).filter(VM.id == vm_id, VM.user_id == current_user.id).first()
+    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
     if not vm:
         raise HTTPException(404, "VM not found")
 

@@ -8,6 +8,22 @@ from datetime import datetime
 from .database import Base
 
 
+from sqlalchemy import Table
+
+vm_shares = Table(
+    "vm_shares",
+    Base.metadata,
+    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
+    Column("vm_id", Integer, ForeignKey("vms.id"), primary_key=True),
+)
+
+vm_group_shares = Table(
+    "vm_group_shares",
+    Base.metadata,
+    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
+    Column("group_id", Integer, ForeignKey("vm_groups.id"), primary_key=True),
+)
+
 class User(Base):
     __tablename__ = "users"
 
@@ -25,6 +41,8 @@ class User(Base):
 
     vms = relationship("VM", back_populates="owner", cascade="all, delete-orphan")
     groups = relationship("VMGroup", back_populates="owner", cascade="all, delete-orphan")
+    shared_vms = relationship("VM", secondary=vm_shares, back_populates="shared_with")
+    shared_groups = relationship("VMGroup", secondary=vm_group_shares, back_populates="shared_with")
 
 
 class VMGroup(Base):
@@ -40,6 +58,7 @@ class VMGroup(Base):
 
     owner = relationship("User", back_populates="groups")
     vms = relationship("VM", back_populates="group")
+    shared_with = relationship("User", secondary=vm_group_shares, back_populates="shared_groups")
 
 
 class VM(Base):
@@ -71,6 +90,7 @@ class VM(Base):
 
     owner = relationship("User", back_populates="vms")
     group = relationship("VMGroup", back_populates="vms")
+    shared_with = relationship("User", secondary=vm_shares, back_populates="shared_vms")
 
 
 class SystemSetting(Base):

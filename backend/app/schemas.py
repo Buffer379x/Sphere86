@@ -62,13 +62,14 @@ class VMGroupBase(BaseModel):
     network_enabled: bool = False
 
 class VMGroupCreate(VMGroupBase):
-    pass
+    shared_with_user_ids: Optional[List[int]] = None
 
 class VMGroupUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     color: Optional[str] = None
     network_enabled: Optional[bool] = None
+    shared_with_user_ids: Optional[List[int]] = None
 
 class VMGroupResponse(VMGroupBase):
     id: int
@@ -76,6 +77,7 @@ class VMGroupResponse(VMGroupBase):
     created_at: datetime
     vm_count: int = 0
     has_running_vms: bool = False
+    shared_with_user_ids: List[int] = []
 
     class Config:
         from_attributes = True
@@ -287,12 +289,14 @@ class VMBase(BaseModel):
 
 class VMCreate(VMBase):
     config: VMConfig = Field(default_factory=VMConfig)
+    shared_with_user_ids: Optional[List[int]] = None
 
 class VMUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     group_id: Optional[int] = None
     config: Optional[VMConfig] = None
+    shared_with_user_ids: Optional[List[int]] = None
 
 class VMResponse(VMBase):
     id: int
@@ -309,6 +313,7 @@ class VMResponse(VMBase):
     owner_username: Optional[str] = None
     group_name: Optional[str] = None
     group_color: Optional[str] = None
+    shared_with_user_ids: List[int] = []
 
     class Config:
         from_attributes = True
