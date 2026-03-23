@@ -1,6 +1,6 @@
 # =============================================================================
-# Sphere86 — Docker Compose (default: bridge network, port-exposed)
-# For macvlan, use: docker compose -f docker-compose.yml -f docker-compose.macvlan.yml up
+# Sphere86 — Docker Compose
+# Default networking is bridge. To use macvlan, read the instructions below.
 # =============================================================================
 
 name: sphere86
@@ -8,6 +8,13 @@ name: sphere86
 networks:
   private:
     driver: bridge
+
+  # --- MACVLAN CONFIGURATION ---
+  # To use macvlan, uncomment the following lines and ensure the 'netpub' network
+  # is created in docker (e.g. docker network create -d macvlan --subnet=... netpub)
+  # 
+  # netpub:
+  #   external: true
 
 services:
 
@@ -25,8 +32,8 @@ services:
     container_name: Sphere86-nginx
     restart: unless-stopped
     ports:
+      # If using macvlan, COMMENT OUT these port mappings:
       - "${WEB_PORT:-80}:80"
-      # Uncomment to enable HTTPS (also set SSL_CERTS_DIR in .env):
       # - "${HTTPS_PORT:-443}:443"
     environment:
       - PUID=${PUID:-1000}
@@ -34,7 +41,10 @@ services:
       - SERVER_NAME=${SERVER_NAME:-_}
       - CERTS_DIR=/etc/nginx/certs
     networks:
-      - private
+      private: {}
+      # If using macvlan, UNCOMMENT the following lines:
+      # netpub:
+      #   ipv4_address: 192.168.46.101
     depends_on:
       engine:
         condition: service_healthy

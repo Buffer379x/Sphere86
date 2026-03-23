@@ -26,6 +26,8 @@ class UserBase(BaseModel):
     email: str
     is_admin: bool = False
     is_active: bool = True
+    can_manage_vms: bool = False
+    can_manage_groups: bool = False
     max_vms: int = 10
     max_storage_gb: int = 100
 
@@ -36,6 +38,8 @@ class UserUpdate(BaseModel):
     email: Optional[str] = None
     is_admin: Optional[bool] = None
     is_active: Optional[bool] = None
+    can_manage_vms: Optional[bool] = None
+    can_manage_groups: Optional[bool] = None
     max_vms: Optional[int] = None
     max_storage_gb: Optional[int] = None
     password: Optional[str] = None

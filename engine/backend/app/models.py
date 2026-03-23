@@ -36,6 +36,8 @@ class User(Base):
     is_ldap = Column(Boolean, default=False, nullable=False)
     max_vms = Column(Integer, default=10, nullable=False)
     max_storage_gb = Column(Integer, default=100, nullable=False)
+    can_manage_vms = Column(Boolean, default=False, nullable=False)
+    can_manage_groups = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     last_login = Column(DateTime, nullable=True)
 

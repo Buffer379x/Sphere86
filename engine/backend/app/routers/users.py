@@ -56,9 +56,9 @@ async def create_user(
         email=body.email,
         hashed_password=hash_password(body.password),
         is_admin=body.is_admin,
-        is_active=body.is_active,
-        max_vms=body.max_vms,
         max_storage_gb=body.max_storage_gb,
+        can_manage_vms=body.can_manage_vms if body.can_manage_vms is not None else body.is_admin,
+        can_manage_groups=body.can_manage_groups if body.can_manage_groups is not None else body.is_admin,
     )
     db.add(user)
     db.commit()
@@ -109,6 +109,10 @@ async def update_user(
         user.is_admin = body.is_admin
     if body.is_active is not None:
         user.is_active = body.is_active
+    if body.can_manage_vms is not None:
+        user.can_manage_vms = body.can_manage_vms
+    if body.can_manage_groups is not None:
+        user.can_manage_groups = body.can_manage_groups
     if body.max_vms is not None:
         user.max_vms = body.max_vms
     if body.max_storage_gb is not None:
