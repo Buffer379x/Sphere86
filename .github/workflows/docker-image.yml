@@ -1,8 +1,11 @@
-name: Build and Publish Docker Image
+name: Build and Publish Docker Images
 
 on:
   push:
     branches: [ "main" ]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-and-push:
@@ -26,9 +29,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image
+      - name: Build and push Engine image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./engine
+          file: ./engine/Dockerfile
           push: true
-          tags: ghcr.io/${{ env.REPO_LC }}:latest
+          tags: ghcr.io/${{ env.REPO_LC }}-engine:latest
+
+      - name: Build and push Web image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./web
+          file: ./web/Dockerfile
+          push: true
+          tags: ghcr.io/${{ env.REPO_LC }}-web:latest
