@@ -3,7 +3,7 @@ from sqlalchemy import (
     Column, Integer, String, Boolean, DateTime, ForeignKey,
     Text, JSON, Float
 )
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from datetime import datetime
 from .database import Base
 
@@ -43,7 +43,8 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     last_login = Column(DateTime, nullable=True)
 
-    vms = relationship("VM", back_populates="owner", cascade="all, delete-orphan")
+    vms = relationship("VM", primaryjoin="User.id == VM.user_id", foreign_keys="VM.user_id", back_populates="owner", cascade="all, delete-orphan")
+    locked_vms = relationship("VM", primaryjoin="User.id == VM.locked_by_user_id", foreign_keys="VM.locked_by_user_id", back_populates="locked_by")
     groups = relationship("VMGroup", back_populates="owner", cascade="all, delete-orphan")
     shared_vms = relationship("VM", secondary=vm_shares, back_populates="shared_with")
     shared_groups = relationship("VMGroup", secondary=vm_group_shares, back_populates="shared_with")
@@ -94,10 +95,10 @@ class VM(Base):
     last_started = Column(DateTime, nullable=True)
     last_stopped = Column(DateTime, nullable=True)
 
-    owner = relationship("User", back_populates="vms", foreign_keys=[user_id])
+    owner = relationship("User", primaryjoin="User.id == VM.user_id", foreign_keys="VM.user_id", back_populates="vms")
     group = relationship("VMGroup", back_populates="vms")
     shared_with = relationship("User", secondary=vm_shares, back_populates="shared_vms")
-    locked_by = relationship("User", foreign_keys=[locked_by_user_id])
+    locked_by = relationship("User", primaryjoin="User.id == VM.locked_by_user_id", foreign_keys="VM.locked_by_user_id", back_populates="locked_vms")
 
 
 class SystemSetting(Base):
@@ -113,7 +114,8 @@ class AuditLog(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    action = Column(String(128), nullable=False)
-    target = Column(String(256), nullable=True)
-    detail = Column(Text, nullable=True)
+    endpoint = Column(String(256), nullable=False)
+    action = Column(String(64), nullable=False)
+    details = Column(String(512), nullable=True)
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
+
