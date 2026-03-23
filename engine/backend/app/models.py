@@ -78,6 +78,8 @@ class VM(Base):
     # Status: stopped | starting | running | paused | error
     status = Column(String(32), default="stopped", nullable=False)
 
+    locked_by_user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+
     # Network (assigned by runner when VM starts)
     vnc_port = Column(Integer, nullable=True)
     ws_port = Column(Integer, nullable=True)
@@ -92,9 +94,10 @@ class VM(Base):
     last_started = Column(DateTime, nullable=True)
     last_stopped = Column(DateTime, nullable=True)
 
-    owner = relationship("User", back_populates="vms")
+    owner = relationship("User", back_populates="vms", foreign_keys=[user_id])
     group = relationship("VMGroup", back_populates="vms")
     shared_with = relationship("User", secondary=vm_shares, back_populates="shared_vms")
+    locked_by = relationship("User", foreign_keys=[locked_by_user_id])
 
 
 class SystemSetting(Base):

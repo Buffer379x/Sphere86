@@ -37,6 +37,8 @@ def _vm_to_response(vm: VM) -> VMResponse:
         resp.group_name = vm.group.name
         resp.group_color = vm.group.color
     resp.shared_with_user_ids = [u.id for u in vm.shared_with]
+    if vm.locked_by:
+        resp.locked_by_username = vm.locked_by.username
     return resp
 
 
@@ -314,6 +316,8 @@ async def start_vm(
         raise HTTPException(404, "VM not found")
     if vm.status in ("running", "paused", "starting"):
         raise HTTPException(400, "VM is already active")
+    if vm.locked_by_user_id is not None and vm.locked_by_user_id != current_user.id and not current_user.is_admin:
+        raise HTTPException(403, f"VM is currently in use by {vm.locked_by.username}")
 
     # Enforce active VM limit (DB setting takes priority over runner default)
     raw_limit = db.query(SystemSetting).filter(SystemSetting.key == "active_vm_limit").first()
@@ -340,12 +344,14 @@ async def start_vm(
 
     # Claim the slot immediately so concurrent requests can't bypass the limit
     vm.status = "starting"
+    vm.locked_by_user_id = current_user.id
     db.commit()
 
     service = VMService()
     result = await service.start_vm(vm_id, vm_dir, network_group_id=network_group_id)
     if result.get("error"):
         vm.status = "stopped"
+        vm.locked_by_user_id = None
         db.commit()
         raise HTTPException(500, result["error"])
 
@@ -369,6 +375,8 @@ async def stop_vm(
         raise HTTPException(404, "VM not found")
     if vm.status not in ("running", "paused"):
         raise HTTPException(400, "VM is not running")
+    if vm.locked_by_user_id is not None and vm.locked_by_user_id != current_user.id and not current_user.is_admin:
+        raise HTTPException(403, f"VM is currently in use by {vm.locked_by.username}")
 
     service = VMService()
     await service.stop_vm(vm_id)
@@ -377,6 +385,7 @@ async def stop_vm(
     vm.vnc_port = None
     vm.ws_port = None
     vm.last_stopped = datetime.utcnow()
+    vm.locked_by_user_id = None
     db.commit()
     db.refresh(vm)
     return _vm_to_response(vm)
@@ -393,6 +402,8 @@ async def reset_vm(
         raise HTTPException(404, "VM not found")
     if vm.status != "running":
         raise HTTPException(400, "VM is not running")
+    if vm.locked_by_user_id is not None and vm.locked_by_user_id != current_user.id and not current_user.is_admin:
+        raise HTTPException(403, f"VM is currently in use by {vm.locked_by.username}")
 
     service = VMService()
     await service.reset_vm(vm_id)
@@ -411,6 +422,8 @@ async def pause_vm(
         raise HTTPException(404, "VM not found")
     if vm.status not in ("running", "paused"):
         raise HTTPException(400, "VM is not running")
+    if vm.locked_by_user_id is not None and vm.locked_by_user_id != current_user.id and not current_user.is_admin:
+        raise HTTPException(403, f"VM is currently in use by {vm.locked_by.username}")
 
     service = VMService()
     result = await service.pause_vm(vm_id)
@@ -429,6 +442,8 @@ async def send_key(
     vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
     if not vm:
         raise HTTPException(404, "VM not found")
+    if vm.locked_by_user_id is not None and vm.locked_by_user_id != current_user.id and not current_user.is_admin:
+        raise HTTPException(403, f"VM is currently in use by {vm.locked_by.username}")
     key = body.get("key", "")
     if not key:
         raise HTTPException(400, "key is required")
@@ -463,6 +478,7 @@ async def get_vm_status(
                 vm.vnc_port = None
                 vm.ws_port = None
                 vm.last_stopped = datetime.utcnow()
+                vm.locked_by_user_id = None
             db.commit()
 
     return {
@@ -471,6 +487,8 @@ async def get_vm_status(
         "vnc_port": vm.vnc_port,
         "ws_port": vm.ws_port,
         "uptime": runner_status.get("uptime"),
+        "locked_by_user_id": vm.locked_by_user_id,
+        "locked_by_username": vm.locked_by.username if vm.locked_by else None,
     }
 
 

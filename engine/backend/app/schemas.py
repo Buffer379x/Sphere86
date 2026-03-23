@@ -321,6 +321,8 @@ class VMResponse(VMBase):
     owner_username: Optional[str] = None
     group_name: Optional[str] = None
     group_color: Optional[str] = None
+    locked_by_user_id: Optional[int] = None
+    locked_by_username: Optional[str] = None
     shared_with_user_ids: List[int] = []
 
     class Config:
