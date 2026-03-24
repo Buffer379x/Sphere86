@@ -8,11 +8,10 @@ name: sphere86
 networks:
   private:
     driver: bridge
-
   # --- MACVLAN CONFIGURATION ---
   # To use macvlan, uncomment the following lines and ensure the 'netpub' network
   # is created in docker (e.g. docker network create -d macvlan --subnet=... netpub)
-  # 
+  #
   # netpub:
   #   external: true
 
@@ -53,7 +52,7 @@ services:
       - ./web/nginx/templates:/etc/nginx/Sphere86-templates:ro
       - ${SSL_CERTS_DIR:-./web/nginx/certs}:/etc/nginx/certs:ro
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost/ > /dev/null || exit 1"]
+      test: [ "CMD-SHELL", "wget -qO- http://localhost/ > /dev/null || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -98,6 +97,7 @@ services:
       - BASE_VNC_PORT=${BASE_VNC_PORT:-5900}
       - BASE_WS_PORT=${BASE_WS_PORT:-6900}
       - MAX_CONCURRENT_VMS=${MAX_CONCURRENT_VMS:-50}
+      - ACTIVE_VM_LIMIT=${ACTIVE_VM_LIMIT:-5}
       - VM_AUTO_SHUTDOWN_MINUTES=${VM_AUTO_SHUTDOWN_MINUTES:-0}
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - PUID=${PUID:-1000}
@@ -120,7 +120,7 @@ services:
       - NET_ADMIN
       - NET_RAW
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/health && curl -f http://localhost:8001/health"]
+      test: [ "CMD-SHELL", "curl -f http://localhost:8000/api/health && curl -f http://localhost:8001/health" ]
       interval: 10s
       timeout: 5s
       retries: 5

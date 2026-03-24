@@ -406,7 +406,7 @@ cd runner && pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8001
 ```
 
-The frontend dev server proxies `/api/`, `/vnc/`, and `/vms/*/audio` to the local backend/runner — see `frontend/vite.config.ts`.
+The frontend dev server proxies `/api/`, `/vnc/`, and `/vms/*/audio` to the local backend/runner — see `web/vite.config.ts`.
 
 ---
 

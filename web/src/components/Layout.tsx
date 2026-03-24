@@ -266,7 +266,7 @@ export default function Layout() {
                 className="absolute inset-0"
                 style={isActive ? undefined : { visibility: 'hidden', pointerEvents: 'none' }}
               >
-                <VNCViewer vmId={tab.vmId} vmName={tab.vmName} />
+                <VNCViewer vmId={tab.vmId} vmName={tab.vmName} isVisible={isActive} />
               </div>
             )
           })}

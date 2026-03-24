@@ -12,11 +12,12 @@ import { clsx } from 'clsx'
 interface Props {
   vmId: number
   vmName: string
+  isVisible?: boolean  // true when this tab is the active tab
 }
 
 // ─── Main VNCViewer ───────────────────────────────────────────────────────────
 
-export default function VNCViewer({ vmId, vmName }: Props) {
+export default function VNCViewer({ vmId, vmName, isVisible = true }: Props) {
   const canvasRef = useRef<HTMLDivElement>(null)
   const rfbRef = useRef<any>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
@@ -248,10 +249,13 @@ export default function VNCViewer({ vmId, vmName }: Props) {
   // MSE-based audio streaming.
   // Using MediaSource Extensions lets us control the buffer directly, keeping
   // playback pinned to the live edge with low latency.
+  // Only stream audio for the active (visible) tab to avoid spawning multiple
+  // ffmpeg processes on the server simultaneously — which exhausts CPU and causes
+  // the health check to time out, making the whole UI appear offline.
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
-    if (!isAlive) {
+    if (!isAlive || !isVisible) {
       audio.src = ''
       return
     }
@@ -348,7 +352,7 @@ export default function VNCViewer({ vmId, vmName }: Props) {
       controller.abort()
       audio.src = ''
     }
-  }, [isAlive, vmId])
+  }, [isAlive, vmId, isVisible])
 
   // Update tab status
   useEffect(() => {

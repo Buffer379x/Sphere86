@@ -6,9 +6,9 @@ library/
 .env
 
 # Node / Frontend
-frontend/node_modules/
-frontend/dist/
-frontend/.vite/
+web/node_modules/
+web/dist/
+web/.vite/
 
 # Python / Backend & Runner
 __pycache__/
