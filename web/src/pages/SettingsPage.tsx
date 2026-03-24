@@ -187,11 +187,20 @@ export default function SettingsPage() {
           <button
             onClick={() => { setHwRefreshResult(null); hwRefreshMut.mutate() }}
             disabled={hwRefreshMut.isPending || !serverOnline}
-            className="btn-secondary disabled:opacity-60"
+            className="btn-primary disabled:opacity-60"
             title={!serverOnline ? 'Server unavailable' : undefined}
           >
-            <RefreshCw className={`w-4 h-4 ${hwRefreshMut.isPending ? 'animate-spin' : ''}`} />
-            {hwRefreshMut.isPending ? 'Refreshing…' : 'Refresh Now'}
+            {hwRefreshMut.isPending ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                Refreshing...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="w-4 h-4" />
+                Refresh Now
+              </>
+            )}
           </button>
         </div>
       )}
