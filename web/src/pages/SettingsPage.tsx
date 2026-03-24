@@ -139,55 +139,66 @@ export default function SettingsPage() {
 
       {/* Update button (admin only) */}
       {isAdmin && (
-        <div className="card px-6 py-5 flex items-center justify-between">
-          <div>
+        <div className="card px-6 py-5 flex items-center justify-between gap-4">
+          <div className="flex-1 min-w-0">
             <h3 className="font-medium text-slate-900 dark:text-white">Check for Updates</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-              Download the latest 86Box binary and ROM files
-            </p>
+            <div className="flex flex-wrap items-baseline gap-x-4 mt-0.5">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Download the latest 86Box binary and ROM files
+              </p>
+              {updateResult && (
+                <div className="flex gap-3 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                  {Object.entries(updateResult).map(([key, val]) => (
+                    <span key={key} className="capitalize">
+                      {key}: {val.replace(/_/g, ' ')}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <button
             onClick={handleUpdate}
             disabled={updateMut.isPending || !serverOnline}
-            className="btn-primary disabled:opacity-60"
+            className="btn-primary disabled:opacity-60 shrink-0"
             title={!serverOnline ? 'Server unavailable' : undefined}
           >
-            <RefreshCw className={`w-4 h-4 ${updateMut.isPending ? 'animate-spin' : ''}`} />
-            {updateMut.isPending ? 'Updating…' : 'Update Now'}
+            {updateMut.isPending ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                Updating...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="w-4 h-4" />
+                Update Now
+              </>
+            )}
           </button>
         </div>
       )}
 
-      {updateResult && (
-        <div className="card px-6 py-4 space-y-2">
-          {Object.entries(updateResult).map(([key, val]) => (
-            <div key={key} className="flex items-center gap-2 text-sm">
-              {val === 'updated' || val === 'up_to_date' ? (
-                <CheckCircle className="w-4 h-4 text-emerald-500" />
-              ) : (
-                <AlertTriangle className="w-4 h-4 text-red-500" />
-              )}
-              <span className="font-medium text-slate-700 dark:text-slate-300 capitalize">{key}:</span>
-              <span className="text-slate-500 dark:text-slate-400">{val.replace(/_/g, ' ')}</span>
-            </div>
-          ))}
-        </div>
-      )}
 
       {/* Hardware Database refresh (admin only) */}
       {isAdmin && (
-        <div className="card px-6 py-5 flex items-center justify-between">
-          <div>
+        <div className="card px-6 py-5 flex items-center justify-between gap-4">
+          <div className="flex-1 min-w-0">
             <h3 className="font-medium text-slate-900 dark:text-white">Hardware Database</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-              Re-extract machine and device lists from 86Box source
-              {hwRefreshResult && <span className="block text-xs mt-1 text-emerald-600 dark:text-emerald-400">{hwRefreshResult}</span>}
-            </p>
+            <div className="flex flex-wrap items-baseline gap-x-4 mt-0.5">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Re-extract machine and device lists from 86Box source
+              </p>
+              {hwRefreshResult && (
+                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                  {hwRefreshResult}
+                </span>
+              )}
+            </div>
           </div>
           <button
             onClick={() => { setHwRefreshResult(null); hwRefreshMut.mutate() }}
             disabled={hwRefreshMut.isPending || !serverOnline}
-            className="btn-primary disabled:opacity-60"
+            className="btn-primary disabled:opacity-60 shrink-0"
             title={!serverOnline ? 'Server unavailable' : undefined}
           >
             {hwRefreshMut.isPending ? (

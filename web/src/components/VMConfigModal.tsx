@@ -807,9 +807,12 @@ export default function VMConfigModal({ vmId, initialConfig, initialName = '', i
                               To assign specific permissions, remove this VM from the group first.
                             </p>
                             <div className="flex flex-wrap gap-2 opacity-60 pointer-events-none">
-                              {users.filter(u => effectiveSharedWith.includes(u.id)).map(u => (
-                                <span key={u.id} className="inline-flex items-center gap-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-md text-sm font-medium">
-                                  {u.username}
+                              {users
+                                .filter(u => effectiveSharedWith.includes(u.id))
+                                .sort((a, b) => a.username.localeCompare(b.username))
+                                .map(u => (
+                                  <span key={u.id} className="inline-flex items-center gap-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-md text-sm font-medium">
+                                    {u.username}
                                 </span>
                               ))}
                             </div>
@@ -824,9 +827,12 @@ export default function VMConfigModal({ vmId, initialConfig, initialName = '', i
                       return (
                         <div className="space-y-3">
                           <div className="flex flex-wrap gap-2">
-                            {users.filter(u => sharedWith.includes(u.id)).map(u => (
-                              <span key={u.id} className="inline-flex items-center gap-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-md text-sm font-medium">
-                                {u.username}
+                            {users
+                              .filter(u => sharedWith.includes(u.id))
+                              .sort((a, b) => a.username.localeCompare(b.username))
+                              .map(u => (
+                                <span key={u.id} className="inline-flex items-center gap-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-md text-sm font-medium">
+                                  {u.username}
                                 <button type="button" onClick={() => setSharedWith(sharedWith.filter(id => id !== u.id))} className="hover:text-red-500 focus:outline-none transition-colors">
                                   <X className="w-3.5 h-3.5" />
                                 </button>
@@ -843,9 +849,12 @@ export default function VMConfigModal({ vmId, initialConfig, initialName = '', i
                               }}
                             >
                               <option value="">+ Add another user...</option>
-                              {users.filter(u => u.id !== currentUser.id && !sharedWith.includes(u.id)).map(u => (
-                                <option key={u.id} value={u.id}>{u.username}</option>
-                              ))}
+                              {users
+                                .filter(u => u.id !== currentUser.id && !sharedWith.includes(u.id))
+                                .sort((a, b) => a.username.localeCompare(b.username))
+                                .map(u => (
+                                  <option key={u.id} value={u.id}>{u.username}</option>
+                                ))}
                             </select>
                           )}
                         </div>

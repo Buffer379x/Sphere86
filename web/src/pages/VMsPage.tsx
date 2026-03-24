@@ -16,7 +16,7 @@ import { X } from 'lucide-react'
 
 type ViewMode = 'grid' | 'list'
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, onlyDot = false }: { status: string, onlyDot?: boolean }) {
   const map: Record<string, string> = {
     running: 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20',
     paused: 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20',
@@ -28,9 +28,16 @@ function StatusBadge({ status }: { status: string }) {
   const isAnimated = status === 'running' || status === 'paused' || status === 'starting'
 
   return (
-    <span className={clsx('flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium', map[status] || map.stopped)}>
+    <span 
+      className={clsx(
+        'flex items-center rounded-full font-medium transition-colors', 
+        onlyDot ? 'p-1.5' : 'gap-1.5 text-xs px-2.5 py-1',
+        map[status] || map.stopped
+      )}
+      title={onlyDot ? status : undefined}
+    >
       <span className={clsx('w-1.5 h-1.5 rounded-full bg-current', isAnimated && 'animate-pulse')} />
-      {status}
+      {!onlyDot && status}
     </span>
   )
 }
@@ -41,6 +48,8 @@ function SharedBadge({ isSharedWithMe, ownerName, sharedCount, asBadge = false }
   const tooltip = isSharedWithMe
     ? `Shared from ${ownerName || 'another user'}`
     : `Shared with ${sharedCount} user${sharedCount !== 1 ? 's' : ''}`;
+
+  const badgeClasses = "flex items-center text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-[#1e1b4b] px-1.5 py-0.5 rounded border border-indigo-100 dark:border-indigo-900 flex-shrink-0";
 
   const content = (
     <>
@@ -53,16 +62,8 @@ function SharedBadge({ isSharedWithMe, ownerName, sharedCount, asBadge = false }
     </>
   );
 
-  if (asBadge) {
-    return (
-      <span className="flex-shrink-0 flex items-center text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5 rounded cursor-help border border-indigo-100 dark:border-indigo-800/50" title={tooltip}>
-        {content}
-      </span>
-    );
-  }
-
   return (
-    <span className="flex items-center text-indigo-500 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/30 px-1.5 py-0.5 rounded-md cursor-help transition-colors border border-transparent hover:border-indigo-200 dark:hover:border-indigo-800" title={tooltip}>
+    <span className={badgeClasses} title={tooltip}>
       {content}
     </span>
   );
@@ -116,31 +117,21 @@ function VMCard({ vm, parentGroup, onEdit, groupColor, cpuSpeeds, onStartError }
 
   const borderStyle = groupColor ? { borderTopColor: groupColor, borderTopWidth: 3 } : {}
 
-  const iconBgClass = !serverOnline ? 'bg-slate-100 dark:bg-slate-800'
-    : vm.status === 'running' ? 'bg-emerald-100 dark:bg-emerald-900/30'
-    : vm.status === 'paused' ? 'bg-amber-100 dark:bg-amber-900/30'
-    : vm.status === 'starting' ? 'bg-blue-100 dark:bg-blue-900/30'
-    : 'bg-red-100 dark:bg-red-900/30'
 
-  const iconTextClass = !serverOnline ? 'text-slate-400'
-    : vm.status === 'running' ? 'text-emerald-600 dark:text-emerald-400'
-    : vm.status === 'paused' ? 'text-amber-600 dark:text-amber-400'
-    : vm.status === 'starting' ? 'text-blue-600 dark:text-blue-400'
-    : 'text-red-600 dark:text-red-400'
 
   return (
     <div className="card-hover p-5 flex flex-col gap-4" style={borderStyle}>
       {/* Header */}
       <div className="flex items-start gap-3">
-        <div className={clsx('w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0', iconBgClass)}>
-          <Monitor className={clsx('w-4.5 h-4.5', iconTextClass)} />
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-slate-100 dark:bg-slate-800">
+          <Monitor className="w-4.5 h-4.5 text-slate-600 dark:text-slate-400" />
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-slate-900 dark:text-white text-sm truncate cursor-pointer hover:text-blue-600 dark:hover:text-blue-400" onClick={() => openVMTab({ vmId: vm.id, vmUuid: vm.uuid, vmName: vm.name, status: vm.status, group_color: vm.group_color })}>{vm.name}</h3>
           {vm.description && <p className="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5" title={vm.description}>{vm.description}</p>}
         </div>
         <div className="flex flex-col items-end gap-1.5 flex-shrink-0 min-h-[44px]">
-          <StatusBadge status={vm.status} />
+          <StatusBadge status={vm.status} onlyDot={true} />
           <SharedBadge isSharedWithMe={isSharedWithMe} ownerName={vm.owner_username} sharedCount={sharedCount} />
         </div>
       </div>
@@ -157,7 +148,7 @@ function VMCard({ vm, parentGroup, onEdit, groupColor, cpuSpeeds, onStartError }
         </div>
         <div className="flex items-center gap-1.5 col-span-2">
           <span className="font-medium text-slate-700 dark:text-slate-300">CPU:</span>
-          <span className="font-mono truncate">{vm.config?.cpu_family || '—'} @ {cpuSpeeds?.[vm.config?.cpu_family]?.[vm.config?.cpu_speed] ?? '—'} MHz</span>
+          <span className="font-mono truncate">{vm.config?.cpu_family || '—'} @ {cpuSpeeds?.[vm.config?.cpu_family || '']?.[Number(vm.config?.cpu_speed || 0)] ?? '—'} MHz</span>
         </div>
       </div>
 
@@ -181,17 +172,16 @@ function VMCard({ vm, parentGroup, onEdit, groupColor, cpuSpeeds, onStartError }
               <Monitor className="w-3.5 h-3.5" />
               {isLockedByOther ? `Console (🔒 ${vm.locked_by_username})` : 'Console'}
             </button>
+            <button onClick={onEdit} disabled={!isOwnerOrAdmin} className="btn-ghost p-2 disabled:opacity-40 disabled:cursor-not-allowed" title={!isOwnerOrAdmin ? 'No permission' : 'View settings'}>
+              <Eye className="w-3.5 h-3.5" />
+            </button>
             <button 
               onClick={() => stopMut.mutate()} 
               disabled={stopMut.isPending} 
-              className="btn-secondary p-2 hover:!bg-red-100 hover:!text-red-600 hover:!border-red-200 dark:hover:!bg-red-900/30 dark:hover:!text-red-400 dark:hover:!border-red-800 transition-colors" 
+              className="btn-ghost p-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-500 transition-colors" 
               title="Stop"
             >
               <Square className="w-3.5 h-3.5" />
-            </button>
-            
-            <button onClick={onEdit} disabled={!isOwnerOrAdmin} className="btn-ghost p-2 disabled:opacity-40 disabled:cursor-not-allowed" title={!isOwnerOrAdmin ? 'No permission' : 'View settings'}>
-              <Eye className="w-3.5 h-3.5" />
             </button>
           </>
         ) : (
@@ -201,11 +191,11 @@ function VMCard({ vm, parentGroup, onEdit, groupColor, cpuSpeeds, onStartError }
               {startMut.isPending || startMut.isSuccess ? 'Starting…' : 'Start'}
             </button>
             
-            <button onClick={onEdit} disabled={!serverOnline || !isOwnerOrAdmin} className="btn-ghost p-1.5 disabled:opacity-40 disabled:cursor-not-allowed" title={!isOwnerOrAdmin ? 'No permission' : serverOnline ? 'Edit' : 'Server unavailable'}>
+            <button onClick={onEdit} disabled={!serverOnline || !isOwnerOrAdmin} className="btn-ghost p-2 disabled:opacity-40 disabled:cursor-not-allowed" title={!isOwnerOrAdmin ? 'No permission' : serverOnline ? 'Edit' : 'Server unavailable'}>
               <Pencil className="w-3.5 h-3.5" />
             </button>
             
-            <button onClick={() => setDeleteConfirm(true)} disabled={!serverOnline || !isOwnerOrAdmin} className="btn-ghost p-1.5 text-red-400 disabled:opacity-40 disabled:cursor-not-allowed" title={!isOwnerOrAdmin ? 'No permission' : serverOnline ? undefined : 'Server unavailable'}>
+            <button onClick={() => setDeleteConfirm(true)} disabled={!serverOnline || !isOwnerOrAdmin} className="btn-ghost p-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-500 disabled:opacity-40 disabled:cursor-not-allowed" title={!isOwnerOrAdmin ? 'No permission' : serverOnline ? undefined : 'Server unavailable'}>
               <Trash2 className="w-3.5 h-3.5" />
             </button>
           </>
@@ -224,7 +214,7 @@ function VMCard({ vm, parentGroup, onEdit, groupColor, cpuSpeeds, onStartError }
   )
 }
 
-function VMRow({ vm, parentGroup, onEdit, groupColor, onStartError }: { vm: VM; parentGroup?: VMGroup; onEdit: () => void; groupColor?: string; onStartError?: (msg: string) => void }) {
+function VMRow({ vm, parentGroup, onEdit, groupColor, cpuSpeeds, onStartError }: { vm: VM; parentGroup?: VMGroup; onEdit: () => void; groupColor?: string; cpuSpeeds?: Record<string, string[]>; onStartError?: (msg: string) => void }) {
   const qc = useQueryClient()
   const { currentUser, openVMTab, closeVMTab, addToast, serverOnline } = useStore()
   
@@ -263,25 +253,15 @@ function VMRow({ vm, parentGroup, onEdit, groupColor, onStartError }: { vm: VM; 
 
   const rowStyle = groupColor ? { borderLeft: `3px solid ${groupColor}` } : {}
 
-  const iconBgClass = !serverOnline ? 'bg-slate-100 dark:bg-slate-800'
-    : vm.status === 'running' ? 'bg-emerald-100 dark:bg-emerald-900/30'
-    : vm.status === 'paused' ? 'bg-amber-100 dark:bg-amber-900/30'
-    : vm.status === 'starting' ? 'bg-blue-100 dark:bg-blue-900/30'
-    : 'bg-red-100 dark:bg-red-900/30'
 
-  const iconTextClass = !serverOnline ? 'text-slate-400'
-    : vm.status === 'running' ? 'text-emerald-600 dark:text-emerald-400'
-    : vm.status === 'paused' ? 'text-amber-600 dark:text-amber-400'
-    : vm.status === 'starting' ? 'text-blue-600 dark:text-blue-400'
-    : 'text-red-600 dark:text-red-400'
 
   return (
     <>
     <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors" style={rowStyle}>
       <td className="px-5 py-3">
         <div className="flex items-center gap-3">
-          <div className={clsx('w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0', iconBgClass)}>
-            <Monitor className={clsx('w-3.5 h-3.5', iconTextClass)} />
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 bg-slate-100 dark:bg-slate-800">
+            <Monitor className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
           </div>
           <div className="min-w-0">
             {/* VM Name und das SharedBadge nebeneinander */}
@@ -295,48 +275,54 @@ function VMRow({ vm, parentGroup, onEdit, groupColor, onStartError }: { vm: VM; 
       </td>
       <td className="px-5 py-3 w-28"><StatusBadge status={vm.status} /></td>
       <td className="px-5 py-3 w-44 text-xs text-slate-500 font-mono truncate max-w-[11rem]">{vm.config?.machine}</td>
+      <td className="px-5 py-3 w-48 text-xs text-slate-500 font-mono truncate max-w-[12rem]">
+        {vm.config?.cpu_family || '—'} @ {cpuSpeeds?.[vm.config?.cpu_family || '']?.[Number(vm.config?.cpu_speed || 0)] ?? '—'} MHz
+      </td>
       <td className="px-5 py-3 w-24 text-xs text-slate-500 font-mono">
         {(vm.config?.mem_size || 0) >= 1024 ? `${(vm.config.mem_size) / 1024} MB` : `${vm.config?.mem_size} KB`}
       </td>
       <td className="px-5 py-3 w-48">
         <div className="flex items-center gap-1.5">
           {isLockedByOther && !currentUser?.is_admin ? (
-            <button disabled className="btn-secondary flex-1 justify-center text-xs py-1.5 opacity-60 cursor-not-allowed border-amber-200 text-amber-700 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400">
-              🔒 In use by {vm.locked_by_username}
+            <button disabled className="btn-secondary w-32 justify-center text-xs py-1.5 opacity-60 cursor-not-allowed border-amber-200 text-amber-700 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400">
+              🔒 Locked
             </button>
           ) : isRunning ? (
             <>
-              <button onClick={() => openVMTab({ vmId: vm.id, vmUuid: vm.uuid, vmName: vm.name, status: vm.status, group_color: vm.group_color })} className={clsx("btn-primary text-xs py-1 px-2.5", isLockedByOther && "bg-amber-600 hover:bg-amber-700 text-white border-none")}>
-                <Monitor className="w-3 h-3" />
-                {isLockedByOther ? `Console (🔒 ${vm.locked_by_username})` : 'Console'}
-              </button>
-<button 
-                onClick={() => stopMut.mutate()} 
-                disabled={stopMut.isPending} 
-                className="btn-secondary text-xs py-1 px-2 disabled:opacity-60 hover:!bg-red-100 hover:!text-red-600 hover:!border-red-200 dark:hover:!bg-red-900/30 dark:hover:!text-red-400 dark:hover:!border-red-800 transition-colors"
+              <button 
+                onClick={() => openVMTab({ vmId: vm.id, vmUuid: vm.uuid, vmName: vm.name, status: vm.status, group_color: vm.group_color })} 
+                className={clsx("btn-primary w-32 justify-center text-xs py-1.5", isLockedByOther && "bg-amber-600 hover:bg-amber-700 text-white border-none")}
+                title={isLockedByOther ? `Console (🔒 ${vm.locked_by_username})` : 'Console'}
               >
-                {stopMut.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Square className="w-3 h-3" />}
+                <Monitor className="w-3 h-3" />
+                {isLockedByOther ? 'Console 🔒' : 'Console'}
               </button>
               
-              {/* EYE BUTTON (Ausgegraut wenn man nicht der Besitzer/Admin ist) */}
-              <button onClick={onEdit} disabled={!isOwnerOrAdmin} className="btn-ghost p-1.5 disabled:opacity-40 disabled:cursor-not-allowed" title={!isOwnerOrAdmin ? 'No permission' : 'View settings (read-only while running)'}>
+              <button onClick={onEdit} disabled={!isOwnerOrAdmin} className="btn-ghost p-2 disabled:opacity-40 disabled:cursor-not-allowed" title={!isOwnerOrAdmin ? 'No permission' : 'View settings (read-only while running)'}>
                 <Eye className="w-3.5 h-3.5" />
+              </button>
+
+              <button 
+                onClick={() => stopMut.mutate()} 
+                disabled={stopMut.isPending} 
+                className="btn-ghost p-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-500 disabled:opacity-60 transition-colors"
+                title="Stop"
+              >
+                {stopMut.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Square className="w-3.5 h-3.5" />}
               </button>
             </>
           ) : (
             <>
-              <button onClick={() => startMut.mutate()} disabled={startMut.isPending || startMut.isSuccess || !serverOnline} className="btn-success flex-1 justify-center text-xs py-1.5 disabled:opacity-60">
+              <button onClick={() => startMut.mutate()} disabled={startMut.isPending || startMut.isSuccess || !serverOnline} className="btn-success w-32 justify-center text-xs py-1.5 disabled:opacity-60">
                 <Play className="w-3.5 h-3.5" />
                 {startMut.isPending || startMut.isSuccess ? 'Starting…' : 'Start'}
               </button>
               
-              {/* EDIT BUTTON (Ausgegraut wenn man nicht der Besitzer/Admin ist) */}
-              <button onClick={onEdit} disabled={!serverOnline || !isOwnerOrAdmin} className="btn-ghost p-1.5 disabled:opacity-40 disabled:cursor-not-allowed" title={!isOwnerOrAdmin ? 'No permission' : serverOnline ? 'Edit' : 'Server unavailable'}>
+              <button onClick={onEdit} disabled={!serverOnline || !isOwnerOrAdmin} className="btn-ghost p-2 disabled:opacity-40 disabled:cursor-not-allowed" title={!isOwnerOrAdmin ? 'No permission' : serverOnline ? 'Edit' : 'Server unavailable'}>
                 <Pencil className="w-3.5 h-3.5" />
               </button>
               
-              {/* DELETE BUTTON (Ausgegraut wenn man nicht der Besitzer/Admin ist) */}
-              <button onClick={() => setDeleteConfirm(true)} disabled={!serverOnline || !isOwnerOrAdmin} className="btn-ghost p-1.5 text-red-400 disabled:opacity-40 disabled:cursor-not-allowed" title={!isOwnerOrAdmin ? 'No permission' : serverOnline ? undefined : 'Server unavailable'}>
+              <button onClick={() => setDeleteConfirm(true)} disabled={!serverOnline || !isOwnerOrAdmin} className="btn-ghost p-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-500 disabled:opacity-40 disabled:cursor-not-allowed" title={!isOwnerOrAdmin ? 'No permission' : serverOnline ? undefined : 'Server unavailable'}>
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             </>
@@ -447,9 +433,12 @@ function GroupModal({ onSave, onClose, initial, hasRunningVMs = false, initialSh
             ) : (
               <div className="space-y-3">
                 <div className="flex flex-wrap gap-2">
-                  {users.filter(u => sharedWith.includes(u.id)).map(u => (
-                    <span key={u.id} className="inline-flex items-center gap-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-md text-sm font-medium">
-                      {u.username}
+                  {users
+                    .filter(u => sharedWith.includes(u.id))
+                    .sort((a, b) => a.username.localeCompare(b.username))
+                    .map(u => (
+                      <span key={u.id} className="inline-flex items-center gap-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-md text-sm font-medium">
+                        {u.username}
                       <button type="button" onClick={() => setSharedWith(sharedWith.filter(id => id !== u.id))} className="hover:text-red-500 focus:outline-none transition-colors">
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -467,9 +456,12 @@ function GroupModal({ onSave, onClose, initial, hasRunningVMs = false, initialSh
                     }}
                   >
                     <option value="">+ Add another user...</option>
-                    {users.filter(u => u.id !== currentUser.id && !sharedWith.includes(u.id)).map(u => (
-                      <option key={u.id} value={u.id}>{u.username}</option>
-                    ))}
+                    {users
+                      .filter(u => u.id !== currentUser.id && !sharedWith.includes(u.id))
+                      .sort((a, b) => a.username.localeCompare(b.username))
+                      .map(u => (
+                        <option key={u.id} value={u.id}>{u.username}</option>
+                      ))}
                   </select>
                 )}
               </div>
@@ -514,7 +506,7 @@ function GroupSection({ group, vms, view, onEditVM, collapsed, onToggle, cpuSpee
           <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 truncate">{group.name}</span>
           <span className="text-xs text-slate-400 flex-shrink-0">{vms.length} VM{vms.length !== 1 ? 's' : ''}</span>
           {group.network_enabled && (
-            <span className="flex-shrink-0 flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-1.5 py-0.5 rounded">
+            <span className="flex-shrink-0 flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-1.5 py-0.5 rounded border border-blue-100 dark:border-blue-800/50">
               <Network className="w-3 h-3" />Networked
             </span>
           )}
@@ -535,7 +527,7 @@ function GroupSection({ group, vms, view, onEditVM, collapsed, onToggle, cpuSpee
         <button
           onClick={onDeleteGroup}
           disabled={group.has_running_vms || !isGroupOwnerOrAdmin}
-          className="btn-ghost p-1.5 text-red-400 hover:text-red-600 flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="btn-ghost p-1.5 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-500 flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
           title={!isGroupOwnerOrAdmin ? 'No permission' : group.has_running_vms ? 'Stop all VMs before deleting' : 'Delete group'}
         >
           <Trash2 className="w-3.5 h-3.5" />
@@ -551,13 +543,13 @@ function GroupSection({ group, vms, view, onEditVM, collapsed, onToggle, cpuSpee
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 dark:border-slate-800">
-                    {['VM', 'Status', 'Machine', 'RAM', 'Actions'].map(h => (
+                    {['VM', 'Status', 'Machine', 'CPU', 'RAM', 'Actions'].map(h => (
                       <th key={h} className="text-left px-5 py-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {vms.map(vm => <VMRow key={vm.id} vm={vm} parentGroup={group} groupColor={groupColor} onEdit={() => onEditVM(vm)} onStartError={onStartError} />)}
+                  {vms.map(vm => <VMRow key={vm.id} vm={vm} parentGroup={group} groupColor={groupColor} onEdit={() => onEditVM(vm)} cpuSpeeds={cpuSpeeds} onStartError={onStartError} />)}
                 </tbody>
               </table>
             </div>
@@ -688,13 +680,13 @@ const { currentUser, addToast, authConfig, serverOnline, openTabs, updateTabGrou
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-100 dark:border-slate-800">
-                {['VM', 'Status', 'Machine', 'RAM', 'Actions'].map(h => (
+                {['VM', 'Status', 'Machine', 'CPU', 'RAM', 'Actions'].map(h => (
                   <th key={h} className="text-left px-5 py-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {ungrouped.map(vm => <VMRow key={vm.id} vm={vm} onEdit={() => setEditVM(vm)} onStartError={setStartError} />)}
+              {ungrouped.map(vm => <VMRow key={vm.id} vm={vm} onEdit={() => setEditVM(vm)} cpuSpeeds={hw?.cpu_speeds} onStartError={setStartError} />)}
             </tbody>
           </table>
         </div>
@@ -798,7 +790,7 @@ const { currentUser, addToast, authConfig, serverOnline, openTabs, updateTabGrou
         </div>
       ) : (
         <div className="space-y-8">
-          {groups.map(group => {
+          {[...groups].sort((a, b) => a.name.localeCompare(b.name)).map(group => {
             const groupVMs = grouped[group.id] ?? []
             return (
               <GroupSection

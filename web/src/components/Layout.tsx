@@ -203,7 +203,7 @@ export default function Layout() {
             {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
           </button>
           {authConfig?.user_management && (
-            <button onClick={logout} className="sidebar-item w-full text-left text-red-500 dark:text-red-400 hover:text-red-600">
+            <button onClick={logout} className="sidebar-item w-full text-left text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-500">
               <LogOut className="w-4 h-4" />
               Sign Out
             </button>

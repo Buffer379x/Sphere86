@@ -195,7 +195,7 @@ export default function UsersPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {users.map(user => (
+            {[...users].sort((a, b) => a.username.localeCompare(b.username)).map(user => (
               <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-3">
@@ -256,7 +256,7 @@ export default function UsersPage() {
                     {user.id !== currentUser?.id && !user.is_bootstrap && (
                       <button
                         onClick={() => setDeleteConfirm(user)}
-                        className="btn-ghost p-1.5 text-red-400 hover:text-red-600"
+                        className="btn-ghost p-1.5 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-500"
                         title={user.is_admin ? 'Delete admin user' : 'Delete user'}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
