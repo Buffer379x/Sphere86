@@ -415,20 +415,29 @@ class VMProcessManager:
             # SIGSTOP/SIGCONT for pause and simpler process group management.
             box86_env["APPIMAGE_EXTRACT_AND_RUN"] = "1"
 
+            log_file_path = os.path.join(settings.log_dir, f"vm_{vm_id}.log")
+            try:
+                vm_log_file = open(log_file_path, "a")
+                # Add a separator for new start
+                vm_log_file.write(f"\n--- VM START at {time.strftime('%Y-%m-%d %H:%M:%S')} ---\n")
+                vm_log_file.flush()
+            except Exception as e:
+                log.warning("Could not open log file %s: %s", log_file_path, e)
+                vm_log_file = subprocess.DEVNULL
+
             log.info("86Box cmd: %s", " ".join(box86_cmd))
             procs.box86_proc = subprocess.Popen(
                 box86_cmd,
                 env=box86_env,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stdout=vm_log_file,
+                stderr=vm_log_file,
                 cwd=vm_dir,
                 preexec_fn=os.setpgrp,  # own process group so killpg/SIGSTOP covers AppImage children
             )
             await asyncio.sleep(2.0)
 
             if procs.box86_proc.poll() is not None:
-                stderr = procs.box86_proc.stderr.read().decode(errors="replace")
-                raise RuntimeError(f"86Box exited immediately: {stderr[:500]}")
+                raise RuntimeError(f"86Box exited immediately (check {log_file_path} for details)")
 
             self._vms[vm_id] = procs
             log.info("VM %d started successfully (x11vnc TCP port %d)", vm_id, vnc_tcp_port)
@@ -506,12 +515,21 @@ class VMProcessManager:
         env["SDL_AUDIODRIVER"] = "pulse"
         env["PULSE_SINK"] = "box86_sink"
 
+        log_file_path = os.path.join(settings.log_dir, f"vm_{vm_id}.log")
+        try:
+            vm_log_file = open(log_file_path, "a")
+            vm_log_file.write(f"\n--- VM RESET at {time.strftime('%Y-%m-%d %H:%M:%S')} ---\n")
+            vm_log_file.flush()
+        except Exception as e:
+            log.warning("Could not open log file %s: %s", log_file_path, e)
+            vm_log_file = subprocess.DEVNULL
+
         try:
             procs.box86_proc = subprocess.Popen(
                 procs.box86_cmd,
                 env=env,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stdout=vm_log_file,
+                stderr=vm_log_file,
                 cwd=procs.vm_dir,
                 preexec_fn=os.setpgrp,
             )

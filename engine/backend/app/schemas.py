@@ -350,6 +350,7 @@ class VersionInfo(BaseModel):
     roms_version: Optional[str] = None
     roms_latest: Optional[str] = None
     app_version: str = "1.0.0"
+    app_latest: Optional[str] = None
     update_available: bool = False
     roms_update_available: bool = False
     vm_auto_shutdown_minutes: int = 0
@@ -365,8 +366,39 @@ class UserStats(BaseModel):
 # ─── App Settings ─────────────────────────────────────────────────────────────
 
 class AppSettings(BaseModel):
+    # Authentication
+    user_management: bool = True
+    ldap_enabled: bool = False
+    ldap_server: str = ""
+    ldap_port: int = 389
+    ldap_base_dn: str = ""
+    ldap_bind_dn: str = ""
+    ldap_bind_password: str = ""
+    ldap_user_filter: str = "(objectClass=person)"
+    ldap_group_dn: str = ""
+    ldap_username_attr: str = "uid"
+    ldap_email_attr: str = "mail"
+    ldap_tls: bool = False
+
+    # 86Box
+    box86_version: str = ""
+    box86_arch: str = "x86_64"
+
+    # System Limits
     enforce_quotas: bool = True
-    active_vm_limit: Optional[int] = None  # None = use runner default
+    active_vm_limit: Optional[int] = None
+    max_concurrent_vms: int = 50
+    base_vnc_port: int = 5900
+    base_ws_port: int = 6900
+
+    # Defaults
+    default_max_vms: int = 10
+    default_max_storage_gb: int = 100
+
+    # Maintenance & Logging
+    vm_auto_shutdown_minutes: int = 0
+    log_level: str = "info"
+    audio_buffer_secs: float = 0.4
 
 
 # ─── Drive Management ────────────────────────────────────────────────────────

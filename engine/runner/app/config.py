@@ -10,6 +10,7 @@ class RunnerSettings(BaseSettings):
     max_concurrent_vms: int = 50
     active_vm_limit: int = 5   # hard cap on simultaneously running VMs
     log_level: str = "info"
+    log_dir: str = "/data/logs"
     vm_auto_shutdown_minutes: int = 0  # 0 = disabled; stop VMs running longer than this
 
     data_path: str = "/data"

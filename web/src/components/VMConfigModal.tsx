@@ -200,24 +200,24 @@ function MemorySlider({ value, onChange, min, max }: { value: number; onChange: 
 }
 
 const TABS: { id: Tab; label: string; icon: any }[] = [
-  { id: 'general',     label: 'General',      icon: Settings2 },
-  { id: 'machine',     label: 'Machine',       icon: Cpu },
-  { id: 'display',     label: 'Display',       icon: Monitor },
-  { id: 'sound',       label: 'Sound',         icon: Volume2 },
-  { id: 'network',     label: 'Network',       icon: Network },
-  { id: 'controllers', label: 'Controllers',   icon: ServerCog },
-  { id: 'disks',       label: 'Hard Disks',    icon: HardDrive },
-  { id: 'floppy',      label: 'Floppy Drives', icon: Save },
-  { id: 'cdrom',       label: 'CD-ROM Drives', icon: Disc },
-  { id: 'ports',       label: 'Ports & Input', icon: UsbIcon },
-  { id: 'other',       label: 'Other',         icon: Settings2 },
+  { id: 'general', label: 'General', icon: Settings2 },
+  { id: 'machine', label: 'Machine', icon: Cpu },
+  { id: 'display', label: 'Display', icon: Monitor },
+  { id: 'sound', label: 'Sound', icon: Volume2 },
+  { id: 'network', label: 'Network', icon: Network },
+  { id: 'controllers', label: 'Controllers', icon: ServerCog },
+  { id: 'disks', label: 'Hard Disks', icon: HardDrive },
+  { id: 'floppy', label: 'Floppy Drives', icon: Save },
+  { id: 'cdrom', label: 'CD-ROM Drives', icon: Disc },
+  { id: 'ports', label: 'Ports & Input', icon: UsbIcon },
+  { id: 'other', label: 'Other', icon: Settings2 },
 ]
 
 const IDE_CHANNEL_LABELS: Record<string, string> = {
-  '0:0': 'Primary Master',   '0:1': 'Primary Slave',
+  '0:0': 'Primary Master', '0:1': 'Primary Slave',
   '1:0': 'Secondary Master', '1:1': 'Secondary Slave',
-  '2:0': 'Tertiary Master',  '2:1': 'Tertiary Slave',
-  '3:0': 'Quaternary Master','3:1': 'Quaternary Slave',
+  '2:0': 'Tertiary Master', '2:1': 'Tertiary Slave',
+  '3:0': 'Quaternary Master', '3:1': 'Quaternary Slave',
 }
 
 // HDD speed presets are loaded from the hardware API (hw.hdd_speed_presets)
@@ -238,25 +238,25 @@ function parseHddPreset(p: HardwareOption): { size: number | null; bus: string }
 
 // 86Box hdd_table: 127 standard CHS presets [cyl, heads, spt]
 const HDD_TABLE: [number, number, number][] = [
-  [306,4,17],[615,2,17],[306,4,26],[1024,2,17],[697,3,17],[306,8,17],[614,4,17],[615,4,17],
-  [670,4,17],[697,4,17],[987,3,17],[820,4,17],[670,5,17],[697,5,17],[733,5,17],[615,6,17],
-  [462,8,17],[306,8,26],[615,4,26],[1024,4,17],[855,5,17],[925,5,17],[932,5,17],[1024,2,40],
-  [809,6,17],[976,5,17],[977,5,17],[698,7,17],[699,7,17],[981,5,17],[615,8,17],[989,5,17],
-  [820,4,26],[1024,5,17],[733,7,17],[754,7,17],[733,5,26],[940,6,17],[615,6,26],[462,8,26],
-  [830,7,17],[855,7,17],[751,8,17],[1024,4,26],[918,7,17],[925,7,17],[855,5,26],[977,7,17],
-  [987,7,17],[1024,7,17],[823,4,38],[925,8,17],[809,6,26],[976,5,26],[977,5,26],[698,7,26],
-  [699,7,26],[940,8,17],[615,8,26],[1024,5,26],[733,7,26],[1024,8,17],[823,10,17],[754,11,17],
-  [830,10,17],[925,9,17],[1224,7,17],[940,6,26],[855,7,26],[751,8,26],[1024,9,17],[965,10,17],
-  [969,5,34],[980,10,17],[960,5,35],[918,11,17],[1024,10,17],[977,7,26],[1024,7,26],[1024,11,17],
-  [940,8,26],[776,8,33],[755,16,17],[1024,12,17],[1024,8,26],[823,10,26],[830,10,26],[925,9,26],
-  [960,9,26],[1024,13,17],[1224,11,17],[900,15,17],[969,7,34],[917,15,17],[918,15,17],[1524,4,39],
-  [1024,9,26],[1024,14,17],[965,10,26],[980,10,26],[1020,15,17],[1023,15,17],[1024,15,17],[1024,16,17],
-  [1224,15,17],[755,16,26],[903,8,46],[984,10,34],[900,15,26],[917,15,26],[1023,15,26],[684,16,38],
-  [1930,4,62],[967,16,31],[1013,10,63],[1218,15,36],[654,16,63],[659,16,63],[702,16,63],[1002,13,63],
-  [854,16,63],[987,16,63],[995,16,63],[1024,16,63],[1036,16,63],[1120,16,59],[1054,16,63],
+  [306, 4, 17], [615, 2, 17], [306, 4, 26], [1024, 2, 17], [697, 3, 17], [306, 8, 17], [614, 4, 17], [615, 4, 17],
+  [670, 4, 17], [697, 4, 17], [987, 3, 17], [820, 4, 17], [670, 5, 17], [697, 5, 17], [733, 5, 17], [615, 6, 17],
+  [462, 8, 17], [306, 8, 26], [615, 4, 26], [1024, 4, 17], [855, 5, 17], [925, 5, 17], [932, 5, 17], [1024, 2, 40],
+  [809, 6, 17], [976, 5, 17], [977, 5, 17], [698, 7, 17], [699, 7, 17], [981, 5, 17], [615, 8, 17], [989, 5, 17],
+  [820, 4, 26], [1024, 5, 17], [733, 7, 17], [754, 7, 17], [733, 5, 26], [940, 6, 17], [615, 6, 26], [462, 8, 26],
+  [830, 7, 17], [855, 7, 17], [751, 8, 17], [1024, 4, 26], [918, 7, 17], [925, 7, 17], [855, 5, 26], [977, 7, 17],
+  [987, 7, 17], [1024, 7, 17], [823, 4, 38], [925, 8, 17], [809, 6, 26], [976, 5, 26], [977, 5, 26], [698, 7, 26],
+  [699, 7, 26], [940, 8, 17], [615, 8, 26], [1024, 5, 26], [733, 7, 26], [1024, 8, 17], [823, 10, 17], [754, 11, 17],
+  [830, 10, 17], [925, 9, 17], [1224, 7, 17], [940, 6, 26], [855, 7, 26], [751, 8, 26], [1024, 9, 17], [965, 10, 17],
+  [969, 5, 34], [980, 10, 17], [960, 5, 35], [918, 11, 17], [1024, 10, 17], [977, 7, 26], [1024, 7, 26], [1024, 11, 17],
+  [940, 8, 26], [776, 8, 33], [755, 16, 17], [1024, 12, 17], [1024, 8, 26], [823, 10, 26], [830, 10, 26], [925, 9, 26],
+  [960, 9, 26], [1024, 13, 17], [1224, 11, 17], [900, 15, 17], [969, 7, 34], [917, 15, 17], [918, 15, 17], [1524, 4, 39],
+  [1024, 9, 26], [1024, 14, 17], [965, 10, 26], [980, 10, 26], [1020, 15, 17], [1023, 15, 17], [1024, 15, 17], [1024, 16, 17],
+  [1224, 15, 17], [755, 16, 26], [903, 8, 46], [984, 10, 34], [900, 15, 26], [917, 15, 26], [1023, 15, 26], [684, 16, 38],
+  [1930, 4, 62], [967, 16, 31], [1013, 10, 63], [1218, 15, 36], [654, 16, 63], [659, 16, 63], [702, 16, 63], [1002, 13, 63],
+  [854, 16, 63], [987, 16, 63], [995, 16, 63], [1024, 16, 63], [1036, 16, 63], [1120, 16, 59], [1054, 16, 63],
 ]
 
-function calcChsFromSize(sizeMb: number): {cyl: number, heads: number, spt: number} {
+function calcChsFromSize(sizeMb: number): { cyl: number, heads: number, spt: number } {
   let ts = sizeMb * 2048
   const MAX_TS = 65535 * 16 * 255
   if (ts > MAX_TS) ts = MAX_TS
@@ -285,7 +285,7 @@ function findHddTypeIndex(cyl: number, heads: number, spt: number): number {
   return 127
 }
 
-function hddBusLimits(bus: string): {maxCyl: number, maxHeads: number, maxSpt: number} {
+function hddBusLimits(bus: string): { maxCyl: number, maxHeads: number, maxSpt: number } {
   if (bus === 'mfm') return { maxCyl: 2047, maxHeads: 15, maxSpt: 26 }
   if (bus === 'esdi') return { maxCyl: 266305, maxHeads: 16, maxSpt: 99 }
   return { maxCyl: 266305, maxHeads: 255, maxSpt: 255 }
@@ -308,10 +308,10 @@ export default function VMConfigModal({ vmId, initialConfig, initialName = '', i
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [imagePicker, setImagePicker] = useState<{ key: string; kind: 'floppy' | 'cdrom' } | null>(null)
   const { serverOnline, setActiveUpload, updateUploadProgress } = useStore()
-  const { data: users = [] } = useQuery({ 
-    queryKey: ['users'], 
+  const { data: users = [] } = useQuery({
+    queryKey: ['users'],
     queryFn: userApi.list,
-    enabled: !!currentUser?.is_admin 
+    enabled: !!currentUser?.is_admin
   })
 
   const { data: hw } = useQuery({ queryKey: ['hardware'], queryFn: systemApi.hardware })
@@ -321,7 +321,7 @@ export default function VMConfigModal({ vmId, initialConfig, initialName = '', i
     const map: Record<string, HardwareOption[]> = {}
     for (const p of hw?.hdd_speed_presets ?? []) {
       const cat = p.category ?? 'Other'
-      ;(map[cat] = map[cat] ?? []).push(p)
+        ; (map[cat] = map[cat] ?? []).push(p)
     }
     return Object.entries(map) as [string, HardwareOption[]][]
   }, [hw])
@@ -640,14 +640,14 @@ export default function VMConfigModal({ vmId, initialConfig, initialName = '', i
 
   const groupNetworking = groups.find(g => g.id === groupId)?.network_enabled ?? false
 
-  const compatVideoCards     = withBusGroups(hw?.video_cards.filter(busCompat)     ?? [])
-  const compatSoundCards     = withBusGroups(hw?.sound_cards.filter(busCompat)     ?? [])
-  const compatNetworkCards   = withBusGroups(hw?.network_cards.filter(busCompat)   ?? [])
+  const compatVideoCards = withBusGroups(hw?.video_cards.filter(busCompat) ?? [])
+  const compatSoundCards = withBusGroups(hw?.sound_cards.filter(busCompat) ?? [])
+  const compatNetworkCards = withBusGroups(hw?.network_cards.filter(busCompat) ?? [])
   const compatHddControllers = withBusGroups((hw?.hdd_controllers ?? []).filter(busCompat).filter((c: HardwareOption) => c.id !== 'ide_ter' && c.id !== 'ide_qua'))
-  const compatScsiCards      = withBusGroups(hw?.scsi_cards.filter(busCompat)      ?? [])
-  const compatFdcCards       = withBusGroups(hw?.fdc_cards?.filter(busCompat)      ?? [])
-  const compatIsartcTypes    = withBusGroups(hw?.isartc_types.filter(busCompat)    ?? [])
-  const compatIsamemTypes    = withBusGroups(hw?.isamem_types?.filter(busCompat)   ?? [])
+  const compatScsiCards = withBusGroups(hw?.scsi_cards.filter(busCompat) ?? [])
+  const compatFdcCards = withBusGroups(hw?.fdc_cards?.filter(busCompat) ?? [])
+  const compatIsartcTypes = withBusGroups(hw?.isartc_types.filter(busCompat) ?? [])
+  const compatIsamemTypes = withBusGroups(hw?.isamem_types?.filter(busCompat) ?? [])
 
   // ── Channel map (drives tab + cdrom tab + floating indicators) ────────────
   // Controllers that only provide the primary channel (0:0 / 0:1)
@@ -690,9 +690,9 @@ export default function VMConfigModal({ vmId, initialConfig, initialName = '', i
   }
 
   // Controller type detection (determines which bus types are valid for HDDs)
-  const isMfmController  = hdcId.startsWith('st506') || hdcId.startsWith('xta')
+  const isMfmController = hdcId.startsWith('st506') || hdcId.startsWith('xta')
   const isEsdiController = hdcId.startsWith('esdi')
-  const scsiAvailable    = cfg.scsi_card !== 'none'
+  const scsiAvailable = cfg.scsi_card !== 'none'
 
   async function handleSave() {
     if (!name.trim()) { setError('VM name is required'); return }
@@ -731,956 +731,958 @@ export default function VMConfigModal({ vmId, initialConfig, initialName = '', i
             )}
           </div>
         )}
-      <div className="h-[85vh] card flex flex-col shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex-shrink-0">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white">{title}</h2>
-          <button onClick={handleClose} className="btn-ghost p-1.5 rounded-lg">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="flex flex-1 min-h-0">
-          {/* Sidebar tabs */}
-          <div className="w-44 flex-shrink-0 border-r border-slate-200 dark:border-slate-800 py-3 px-2 space-y-0.5 overflow-y-auto">
-            {TABS.map(tab => {
-              const Icon = tab.icon
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={clsx(
-                    'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-left',
-                    activeTab === tab.id
-                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                  )}
-                >
-                  <Icon className="w-4 h-4 flex-shrink-0" />
-                  {tab.label}
-                </button>
-              )
-            })}
+        <div className="h-[85vh] card flex flex-col shadow-2xl">
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex-shrink-0">
+            <h2 className="text-base font-semibold text-slate-900 dark:text-white">{title}</h2>
+            <button onClick={handleClose} className="btn-ghost p-1.5 rounded-lg">
+              <X className="w-4 h-4" />
+            </button>
           </div>
 
-          {/* Tab content */}
-          <fieldset disabled={readOnly || !serverOnline} className="flex-1 min-w-0 border-0 p-0 m-0 overflow-hidden flex flex-col">
-          <DisabledCtx.Provider value={readOnly || !serverOnline}>
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
-
-            {/* ── General ─────────────────────────────────────────────── */}
-            {activeTab === 'general' && (
-              <>
-                <FieldGroup label="Identity">
-                  <Field label="VM Name">
-                    <input className="input" value={name} onChange={e => setName(e.target.value)} placeholder="My 486 PC" />
-                  </Field>
-                  <Field label="Description">
-                    <input className="input" value={desc} onChange={e => setDesc(e.target.value)} placeholder="Optional description" />
-                  </Field>
-                  <Field label="Group">
-                    <div className="flex items-center gap-2">
-                      {groupId && (() => { const g = groups.find(g => g.id === groupId); return g ? <span className="w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: g.color }} /> : null })()}
-                      <select className="input flex-1" value={groupId ?? ''} onChange={e => setGroupId(e.target.value ? parseInt(e.target.value) : null)}>
-                        <option value="">No group</option>
-                        {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
-                      </select>
-                    </div>
-                    {(() => { const g = groups.find(g => g.id === groupId); return g?.network_enabled ? (
-                      <p className="text-xs text-blue-500 dark:text-blue-400 mt-1 flex items-center gap-1"><Network className="w-3 h-3" />Networking enabled — VMs in this group share a private LAN</p>
-                    ) : g && !g.network_enabled ? (
-                      <p className="text-xs text-slate-400 mt-1">No networking — VMs in this group are isolated</p>
-                    ) : null })()}
-                  </Field>
-                  <FieldGroup label="Sharing">
-                  <Field label="Shared with user" hint="Select users who can access this VM">
-                    {(() => {
-                      const selectedGroup = groups.find(g => g.id === groupId);
-                      const isGroupShared = selectedGroup && selectedGroup.shared_with_user_ids && selectedGroup.shared_with_user_ids.length > 0;
-                      const effectiveSharedWith = isGroupShared ? selectedGroup.shared_with_user_ids! : sharedWith;
-
-                      if (isGroupShared) {
-                        return (
-                          <div className="space-y-3">
-                            <p className="text-xs text-amber-500 dark:text-amber-400 font-medium">
-                              Permissions are inherited from the group "{selectedGroup.name}". 
-                              To assign specific permissions, remove this VM from the group first.
-                            </p>
-                            <div className="flex flex-wrap gap-2 opacity-60 pointer-events-none">
-                              {users
-                                .filter(u => effectiveSharedWith.includes(u.id))
-                                .sort((a, b) => a.username.localeCompare(b.username))
-                                .map(u => (
-                                  <span key={u.id} className="inline-flex items-center gap-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-md text-sm font-medium">
-                                    {u.username}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      }
-
-                      if (!currentUser?.is_admin) {
-                        return <p className="text-xs text-slate-500 mt-2">Only Admins can share VMs.</p>;
-                      }
-
-                      return (
-                        <div className="space-y-3">
-                          <div className="flex flex-wrap gap-2">
-                            {users
-                              .filter(u => sharedWith.includes(u.id))
-                              .sort((a, b) => a.username.localeCompare(b.username))
-                              .map(u => (
-                                <span key={u.id} className="inline-flex items-center gap-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-md text-sm font-medium">
-                                  {u.username}
-                                <button type="button" onClick={() => setSharedWith(sharedWith.filter(id => id !== u.id))} className="hover:text-red-500 focus:outline-none transition-colors">
-                                  <X className="w-3.5 h-3.5" />
-                                </button>
-                              </span>
-                            ))}
-                            {sharedWith.length === 0 && <span className="text-sm text-slate-500 italic">Not shared with any user.</span>}
-                          </div>
-                          {users.filter(u => u.id !== currentUser.id && !sharedWith.includes(u.id)).length > 0 && (
-                            <select
-                              className="input w-full text-sm"
-                              value=""
-                              onChange={e => {
-                                if (e.target.value) setSharedWith([...sharedWith, parseInt(e.target.value)])
-                              }}
-                            >
-                              <option value="">+ Add another user...</option>
-                              {users
-                                .filter(u => u.id !== currentUser.id && !sharedWith.includes(u.id))
-                                .sort((a, b) => a.username.localeCompare(b.username))
-                                .map(u => (
-                                  <option key={u.id} value={u.id}>{u.username}</option>
-                                ))}
-                            </select>
-                          )}
-                        </div>
-                      );
-                    })()}
-                  </Field>
-                </FieldGroup>
-                </FieldGroup>
-              </>
-            )}
-
-            {/* ── Machine ─────────────────────────────────────────────── */}
-            {activeTab === 'machine' && hw && (
-              <>
-                <FieldGroup label="System">
-                  <Field label="Machine" hint="System board / chipset">
-                    <Select
-                      value={cfg.machine}
-                      onChange={v => set('machine', v)}
-                      options={hw.machines}
-                      grouped
-                    />
-                  </Field>
-                  <Field label="CPU" hint="Processor family">
-                    <select className="input" value={cfg.cpu_family} onChange={e => set('cpu_family', e.target.value)}>
-                      {availableCPUs.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                      {availableCPUs.length === 0 && <option value={cfg.cpu_family}>{cfg.cpu_family}</option>}
-                    </select>
-                  </Field>
-                  <Field label="CPU Speed">
-                    {availableSpeeds.length > 0 ? (
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
-                          <span>{availableSpeeds[0]} MHz</span>
-                          <span className="font-medium text-slate-900 dark:text-white">
-                            {availableSpeeds[cfg.cpu_speed] ?? availableSpeeds[0]} MHz
-                          </span>
-                          <span>{availableSpeeds[availableSpeeds.length - 1]} MHz</span>
-                        </div>
-                        <input
-                          type="range"
-                          min={0}
-                          max={availableSpeeds.length - 1}
-                          value={Math.min(cfg.cpu_speed, availableSpeeds.length - 1)}
-                          onChange={e => set('cpu_speed', parseInt(e.target.value))}
-                          className="w-full accent-blue-600"
-                        />
-                        <div className="flex flex-wrap gap-1">
-                          {availableSpeeds.map((s, idx) => (
-                            <button
-                              key={idx}
-                              onClick={() => set('cpu_speed', idx)}
-                              className={clsx(
-                                'text-xs px-2 py-0.5 rounded border transition-colors',
-                                cfg.cpu_speed === idx
-                                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                                  : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-slate-300'
-                              )}
-                            >
-                              {s} MHz
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      <span className="text-sm text-slate-400">Select a CPU family first</span>
+          <div className="flex flex-1 min-h-0">
+            {/* Sidebar tabs */}
+            <div className="w-44 flex-shrink-0 border-r border-slate-200 dark:border-slate-800 py-3 px-2 space-y-0.5 overflow-y-auto">
+              {TABS.map(tab => {
+                const Icon = tab.icon
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={clsx(
+                      'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-left',
+                      activeTab === tab.id
+                        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
+                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                     )}
-                  </Field>
-                </FieldGroup>
-                <FieldGroup label="Processor">
-                  <Field label="Dynamic Recompiler" hint="Faster emulation for 486+">
-                    <Toggle disabled={readOnly} value={cfg.cpu_use_dynarec} onChange={v => set('cpu_use_dynarec', v)} label="Enable" />
-                  </Field>
-                  <Field label="Wait States" hint="CPU bus wait cycles">
-                    <input type="number" min={0} max={15} className="input w-24" value={cfg.cpu_waitstates} onChange={e => set('cpu_waitstates', parseInt(e.target.value))} />
-                  </Field>
-                  <Field label="FPU">
-                    <select className="input" value={cfg.fpu_type} onChange={e => set('fpu_type', e.target.value)}>
-                      <option value="none">None</option>
-                      <option value="builtin">Built-in</option>
-                      <option value="8087">8087</option>
-                      <option value="287">287</option>
-                      <option value="387">387</option>
-                    </select>
-                  </Field>
-                  <Field label="Soft-float FPU" hint="Software FPU emulation">
-                    <Toggle disabled={readOnly} value={cfg.fpu_softfloat} onChange={v => set('fpu_softfloat', v)} />
-                  </Field>
-                </FieldGroup>
-                <FieldGroup label="Memory">
-                  <Field label="RAM" hint="System memory">
-                    <MemorySlider
-                      value={cfg.mem_size}
-                      onChange={v => set('mem_size', v)}
-                      min={machineRamMin}
-                      max={machineRamMax}
-                    />
-                  </Field>
-                </FieldGroup>
-                <FieldGroup label="Clock">
-                  <Field label="Time Sync">
-                    <select className="input w-40" value={cfg.time_sync} onChange={e => set('time_sync', e.target.value)}>
-                      <option value="disabled">Disabled</option>
-                      <option value="local">Local Time</option>
-                      <option value="utc">UTC</option>
-                    </select>
-                  </Field>
-                </FieldGroup>
-              </>
-            )}
+                  >
+                    <Icon className="w-4 h-4 flex-shrink-0" />
+                    {tab.label}
+                  </button>
+                )
+              })}
+            </div>
 
-            {/* ── Display ─────────────────────────────────────────────── */}
-            {activeTab === 'display' && hw && (
-              <>
-                <FieldGroup label="Video Card">
-                  <Field label="Video Card">
-                    <Select value={cfg.gfxcard} onChange={v => set('gfxcard', v)} options={compatVideoCards} grouped />
-                    <DeviceSettings
-                      device={hw?.video_cards.find(c => c.id === cfg.gfxcard)}
-                      settings={devSettings(cfg.gfxcard)}
-                      onChange={(k, v) => setDeviceSettings(cfg.gfxcard, k, v)}
-                    />
-                  </Field>
-                  <Field label="Secondary Monitors" hint="Show dual monitor support">
-                    <Toggle disabled={readOnly} value={cfg.show_second_monitors} onChange={v => set('show_second_monitors', v)} />
-                  </Field>
-                </FieldGroup>
-                <FieldGroup label="3dfx Voodoo">
-                  <Field label="Voodoo Card" hint="Add Voodoo 3D accelerator">
-                    <Toggle disabled={readOnly} value={cfg.voodoo_enabled} onChange={v => set('voodoo_enabled', v)} label="Enable Voodoo" />
-                  </Field>
-                  {cfg.voodoo_enabled && voodooTypes && (
-                    <Field label="Voodoo Type">
-                      <select className="input" value={cfg.voodoo_type} onChange={e => set('voodoo_type', e.target.value)}>
-                        {voodooTypes.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
-                      </select>
-                    </Field>
-                  )}
-                </FieldGroup>
-              </>
-            )}
+            {/* Tab content */}
+            <fieldset disabled={readOnly || !serverOnline} className="flex-1 min-w-0 border-0 p-0 m-0 overflow-hidden flex flex-col">
+              <DisabledCtx.Provider value={readOnly || !serverOnline}>
+                <div className="flex-1 overflow-y-auto p-6 space-y-6">
 
-            {/* ── Sound ───────────────────────────────────────────────── */}
-            {activeTab === 'sound' && hw && (
-              <>
-                <FieldGroup label="Audio">
-                  <Field label="Sound Card">
-                    <Select value={cfg.sndcard} onChange={v => set('sndcard', v)} options={compatSoundCards} grouped />
-                    <DeviceSettings
-                      device={hw?.sound_cards.find(c => c.id === cfg.sndcard)}
-                      settings={devSettings(cfg.sndcard)}
-                      onChange={(k, v) => setDeviceSettings(cfg.sndcard, k, v)}
-                    />
-                  </Field>
-                  <Field label="FM Driver" hint="OPL synthesizer accuracy vs. speed">
-                    <select className="input w-48" value={cfg.fm_driver} onChange={e => set('fm_driver', e.target.value)}>
-                      <option value="nuked">Nuked OPL (accurate)</option>
-                      <option value="ymfm">YMFM (faster)</option>
-                    </select>
-                  </Field>
-                  <Field label="Float Audio" hint="32-bit float mixing (higher quality)">
-                    <Toggle disabled={readOnly} value={cfg.sound_is_float} onChange={v => set('sound_is_float', v)} />
-                  </Field>
-                </FieldGroup>
-                <FieldGroup label="MIDI">
-                  <Field label="MIDI Output">
-                    <Select value={cfg.midi_device} onChange={v => set('midi_device', v)} options={hw.midi_devices} />
-                  </Field>
-                  <Field label="Standalone MPU-401" hint="Add MPU-401 without a sound card">
-                    <Toggle disabled={readOnly} value={cfg.mpu401_standalone_enable} onChange={v => set('mpu401_standalone_enable', v)} />
-                  </Field>
-                </FieldGroup>
-              </>
-            )}
-
-            {/* ── Network ─────────────────────────────────────────────── */}
-            {activeTab === 'network' && hw && (
-              <>
-                <FieldGroup label="Network Card">
-                  <Field label="Network Card">
-                    <Select value={cfg.net_card} onChange={v => set('net_card', v)} options={compatNetworkCards} grouped />
-                    <DeviceSettings
-                      device={hw?.network_cards.find(c => c.id === cfg.net_card)}
-                      settings={devSettings(cfg.net_card)}
-                      onChange={(k, v) => setDeviceSettings(cfg.net_card, k, v)}
-                    />
-                  </Field>
-                  {cfg.net_card !== 'none' && (
+                  {/* ── General ─────────────────────────────────────────────── */}
+                  {activeTab === 'general' && (
                     <>
-                      {groupNetworking && (
-                        <Field label="Use Group Network" hint="Connect this adapter to the group's private LAN bridge">
-                          <Toggle value={cfg.net_use_group ?? true} onChange={v => set('net_use_group', v)} />
+                      <FieldGroup label="Identity">
+                        <Field label="VM Name">
+                          <input className="input" value={name} onChange={e => setName(e.target.value)} placeholder="My 486 PC" />
                         </Field>
-                      )}
-                      {groupNetworking && (cfg.net_use_group ?? true) && (
-                        <p className="text-xs text-blue-500 dark:text-blue-400 flex items-center gap-1">
-                          <Network className="w-3 h-3 flex-shrink-0" />
-                          Adapter will connect to the group bridge via TAP at start time — slirp/pcap settings are ignored.
-                        </p>
-                      )}
-                      {(!groupNetworking || !(cfg.net_use_group ?? true)) && (
-                        <>
-                          <Field label="Network Type" hint="How the VM connects to the network">
-                            <select className="input w-48" value={cfg.net_type} onChange={e => set('net_type', e.target.value)}>
-                              <option value="slirp">SLiRP (NAT) — recommended</option>
-                              <option value="pcap">PCap (bridged)</option>
-                              <option value="vde">VDE</option>
-                            </select>
-                          </Field>
-                          {cfg.net_type === 'pcap' && (
-                            <Field label="Host Device" hint="Network interface to bridge to">
-                              <input className="input" value={cfg.net_host_dev} onChange={(e: React.ChangeEvent<HTMLInputElement>) => set('net_host_dev', e.target.value)} placeholder="eth0" />
-                            </Field>
-                          )}
-                        </>
-                      )}
-                    </>
-                  )}
-                </FieldGroup>
-              </>
-            )}
-
-            {/* ── Controllers ─────────────────────────────────────────── */}
-            {activeTab === 'controllers' && hw && (
-              <>
-                <FieldGroup label="Hard Disk Controller">
-                  <Field label="HDC Controller" hint="Primary hard disk controller">
-                    <Select value={cfg.hdd_controller} onChange={setHddController} options={compatHddControllers} grouped />
-                    <DeviceSettings
-                      device={hw?.hdd_controllers.find(c => c.id === cfg.hdd_controller)}
-                      settings={devSettings(cfg.hdd_controller)}
-                      onChange={(k, v) => setDeviceSettings(cfg.hdd_controller, k, v)}
-                    />
-                  </Field>
-                  <Field label="3rd IDE Channel" hint="Enables tertiary IDE (channels 2:0 / 2:1)">
-                    <Toggle disabled={readOnly} value={cfg.ide_ter_enabled} onChange={v => toggleIdeChannel('ter', v)} />
-                  </Field>
-                  <Field label="4th IDE Channel" hint="Enables quaternary IDE (channels 3:0 / 3:1); requires 3rd">
-                    <Toggle disabled={readOnly} value={cfg.ide_qua_enabled} onChange={v => toggleIdeChannel('qua', v)} />
-                  </Field>
-                </FieldGroup>
-
-                <FieldGroup label="SCSI">
-                  <Field label="SCSI Card">
-                    <Select
-                      value={cfg.scsi_card}
-                      onChange={v => set('scsi_card', v)}
-                      options={[
-                        { id: 'none', name: 'None' },
-                        ...compatScsiCards.filter(c => c.id !== 'none'),
-                      ]}
-                      grouped
-                    />
-                    <DeviceSettings
-                      device={hw?.scsi_cards.find(c => c.id === cfg.scsi_card)}
-                      settings={devSettings(cfg.scsi_card)}
-                      onChange={(k, v) => setDeviceSettings(cfg.scsi_card, k, v)}
-                    />
-                  </Field>
-                </FieldGroup>
-
-                <FieldGroup label="Floppy Controller">
-                  <Field label="FDC Card" hint="Add-in floppy controller (most machines have built-in)">
-                    <Select
-                      value={cfg.fdc_card}
-                      onChange={v => set('fdc_card', v)}
-                      options={[
-                        { id: 'none', name: 'None (use built-in)' },
-                        ...compatFdcCards.filter(c => c.id !== 'none'),
-                      ]}
-                      grouped
-                    />
-                  </Field>
-                </FieldGroup>
-              </>
-            )}
-
-            {/* ── Hard Disks ───────────────────────────────────────────── */}
-            {activeTab === 'disks' && hw && (() => {
-              const enabledSlots = [1,2,3,4,5,6,7,8].filter(i => {
-                const n = String(i).padStart(2, '0')
-                return cfg[`hdd_${n}_enabled` as keyof VMConfig] as boolean
-              })
-              const nextFreeSlot = [1,2,3,4,5,6,7,8].find(i => {
-                const n = String(i).padStart(2, '0')
-                return !(cfg[`hdd_${n}_enabled` as keyof VMConfig] as boolean)
-              })
-              return (
-                <FieldGroup label="Hard Disks">
-                  {enabledSlots.length === 0 && (
-                    <p className="text-sm text-slate-400 italic">No hard disks configured. Click &ldquo;Add Hard Disk&rdquo; to get started.</p>
-                  )}
-                  {enabledSlots.map(i => {
-                    const n = String(i).padStart(2, '0')
-                    const bus = cfg[`hdd_${n}_bus` as keyof VMConfig] as string
-                    const size = cfg[`hdd_${n}_size_mb` as keyof VMConfig] as number
-                    const speed = cfg[`hdd_${n}_speed` as keyof VMConfig] as string
-                    const ideChannel = cfg[`hdd_${n}_ide_channel` as keyof VMConfig] as string
-                    const freeChannels = availableIdeChannels.filter(ch => !channelMap[ch] || channelMap[ch] === `HDD ${i}`)
-                    // Only offer buses valid for the current controller
-                    const busOptions = [
-                      ...(!isMfmController && !isEsdiController ? [{ v: 'ide',  l: 'IDE'     }] : []),
-                      ...(isMfmController                        ? [{ v: 'mfm',  l: 'MFM/RLL' }] : []),
-                      ...(isEsdiController                       ? [{ v: 'esdi', l: 'ESDI'    }] : []),
-                      ...(scsiAvailable                          ? [{ v: 'scsi', l: 'SCSI'    }] : []),
-                    ]
-                    const rawCyl = cfg[`hdd_${n}_cylinders` as keyof VMConfig] as number | null
-                    const rawHds = cfg[`hdd_${n}_heads` as keyof VMConfig] as number | null
-                    const rawSpt = cfg[`hdd_${n}_spt` as keyof VMConfig] as number | null
-                    const chs = (rawCyl && rawHds && rawSpt) ? {cyl: rawCyl, heads: rawHds, spt: rawSpt} : calcChsFromSize(size)
-                    const cyl = chs.cyl, hds = chs.heads, spt = chs.spt
-                    const typeIndex = findHddTypeIndex(cyl, hds, spt)
-                    const limits = hddBusLimits(bus)
-                    const sizeMb = calcSizeFromChs(cyl, hds, spt)
-                    return (
-                      <div key={i} className="p-4 rounded-lg border border-slate-200 dark:border-slate-700 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Hard Disk {i}</span>
-                          {!readOnly && (
-                            <button
-                              onClick={() => set(`hdd_${n}_enabled` as any, false)}
-                              className="p-1 text-slate-400 hover:text-red-500 transition-colors"
-                              title="Remove this disk"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                        <div className="space-y-3">
-                          {/* Type dropdown */}
-                          <div>
-                            <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Type (CHS Preset)</label>
-                            <select className="input text-xs" disabled={readOnly} value={typeIndex} onChange={e => {
-                              const idx = parseInt(e.target.value)
-                              if (idx < 127) {
-                                const [c, h, s] = HDD_TABLE[idx]
-                                set(`hdd_${n}_cylinders` as any, c)
-                                set(`hdd_${n}_heads` as any, h)
-                                set(`hdd_${n}_spt` as any, s)
-                                set(`hdd_${n}_size_mb` as any, calcSizeFromChs(c, h, s))
-                              } else if (idx === 128) {
-                                set(`hdd_${n}_heads` as any, 16)
-                                set(`hdd_${n}_spt` as any, 63)
-                                set(`hdd_${n}_size_mb` as any, calcSizeFromChs(cyl, 16, 63))
-                              }
-                            }}>
-                              {HDD_TABLE.map(([c, h, s], idx) => {
-                                const mb = calcSizeFromChs(c, h, s)
-                                return <option key={idx} value={idx}>{mb} MB (CHS: {c}, {h}, {s})</option>
-                              })}
-                              <option value={127}>Custom…</option>
-                              <option value={128}>Custom (large)…</option>
-                            </select>
-                          </div>
-                          {/* CHS + Size row */}
-                          <div className="grid grid-cols-4 gap-2">
-                            <div>
-                              <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Cylinders</label>
-                              <input type="number" min={1} max={limits.maxCyl} className="input text-xs" disabled={readOnly}
-                                value={cyl}
-                                onChange={e => {
-                                  const v = Math.min(parseInt(e.target.value) || 1, limits.maxCyl)
-                                  set(`hdd_${n}_cylinders` as any, v)
-                                  set(`hdd_${n}_size_mb` as any, calcSizeFromChs(v, hds, spt))
-                                }} />
-                            </div>
-                            <div>
-                              <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Heads</label>
-                              <input type="number" min={1} max={limits.maxHeads} className="input text-xs" disabled={readOnly}
-                                value={hds}
-                                onChange={e => {
-                                  const v = Math.min(parseInt(e.target.value) || 1, limits.maxHeads)
-                                  set(`hdd_${n}_heads` as any, v)
-                                  set(`hdd_${n}_size_mb` as any, calcSizeFromChs(cyl, v, spt))
-                                }} />
-                            </div>
-                            <div>
-                              <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Sectors/Track</label>
-                              <input type="number" min={1} max={limits.maxSpt} className="input text-xs" disabled={readOnly}
-                                value={spt}
-                                onChange={e => {
-                                  const v = Math.min(parseInt(e.target.value) || 1, limits.maxSpt)
-                                  set(`hdd_${n}_spt` as any, v)
-                                  set(`hdd_${n}_size_mb` as any, calcSizeFromChs(cyl, hds, v))
-                                }} />
-                            </div>
-                            <div>
-                              <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Size (MB)</label>
-                              <input type="number" min={1} max={131072} className="input text-xs" disabled={readOnly}
-                                value={sizeMb}
-                                onChange={e => {
-                                  const mb = Math.max(1, parseInt(e.target.value) || 1)
-                                  const chsNew = calcChsFromSize(mb)
-                                  set(`hdd_${n}_cylinders` as any, chsNew.cyl)
-                                  set(`hdd_${n}_heads` as any, chsNew.heads)
-                                  set(`hdd_${n}_spt` as any, chsNew.spt)
-                                  set(`hdd_${n}_size_mb` as any, mb)
-                                }} />
-                            </div>
-                          </div>
-                          {/* Bus + Channel row */}
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Bus</label>
-                              <select className="input text-xs" disabled={readOnly} value={bus} onChange={e => set(`hdd_${n}_bus` as any, e.target.value)}>
-                                {busOptions.map(b => <option key={b.v} value={b.v}>{b.l}</option>)}
-                              </select>
-                            </div>
-                            {bus === 'ide' && (
-                              <div>
-                                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">IDE Channel</label>
-                                {freeChannels.length === 0 ? (
-                                  <p className="text-xs text-red-500 mt-2">No free IDE channels — enable more via Controllers tab.</p>
-                                ) : (
-                                  <select className="input text-xs" disabled={readOnly} value={freeChannels.includes(ideChannel) ? ideChannel : freeChannels[0]} onChange={e => set(`hdd_${n}_ide_channel` as any, e.target.value)}>
-                                    {freeChannels.map(ch => <option key={ch} value={ch}>{IDE_CHANNEL_LABELS[ch]} ({ch})</option>)}
-                                  </select>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                          {/* Speed/Model row */}
-                          <div>
-                            <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Model / Speed Era</label>
-                            <select className="input text-xs" disabled={readOnly} value={speed} onChange={e => {
-                              const id = e.target.value
-                              set(`hdd_${n}_speed` as any, id)
-                              const preset = hw?.hdd_speed_presets.find(p => p.id === id)
-                              if (!preset) return
-                              const parsed = parseHddPreset(preset)
-                              if (!parsed) return
-                              if (busOptions.some(b => b.v === parsed.bus)) set(`hdd_${n}_bus` as any, parsed.bus)
-                            }}>
-                              {hddSpeedGroups.map(([cat, presets]: [string, HardwareOption[]]) => (
-                                <optgroup key={cat} label={cat}>
-                                  {presets.map((p: HardwareOption) => <option key={p.id} value={p.id}>{p.name}</option>)}
-                                </optgroup>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                  {!readOnly && nextFreeSlot && (
-                    <button
-                      onClick={() => {
-                        const n = String(nextFreeSlot).padStart(2, '0')
-                        set(`hdd_${n}_enabled` as any, true)
-                      }}
-                      className="btn-secondary w-full justify-center"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Add Hard Disk
-                    </button>
-                  )}
-                  {!nextFreeSlot && (
-                    <p className="text-xs text-slate-400 italic text-center">Maximum of 8 hard disks reached.</p>
-                  )}
-                </FieldGroup>
-              )
-            })()}
-
-            {/* ── Floppy Drives ────────────────────────────────────────── */}
-            {activeTab === 'floppy' && hw && (
-              <>
-                <FieldGroup label="Drives">
-                  {([1, 2, 3, 4] as const).map(i => {
-                    const n = `0${i}` as '01' | '02' | '03' | '04'
-                    const type = cfg[`fdd_${n}_type` as keyof VMConfig] as string
-                    const fn = cfg[`fdd_${n}_fn` as keyof VMConfig] as string
-                    const prevN = i > 1 ? `0${i - 1}` : null
-                    const prevEnabled = prevN ? (cfg[`fdd_${prevN}_type` as keyof VMConfig] as string) !== 'none' : true
-                    return (
-                      <div key={i} className="space-y-2">
-                        <Field label={`Drive ${i}`}>
-                          <Select
-                            value={type}
-                            disabled={readOnly || !prevEnabled}
-                            onChange={v => {
-                              set(`fdd_${n}_type` as any, v)
-                              // If disabling this drive, also clear subsequent drives
-                              if (v === 'none') {
-                                for (let j = i + 1; j <= 4; j++) {
-                                  const jn = `0${j}`
-                                  set(`fdd_${jn}_type` as any, 'none')
-                                  set(`fdd_${jn}_fn` as any, '')
-                                }
-                              }
-                            }}
-                            options={hw.floppy_types}
-                          />
+                        <Field label="Description">
+                          <input className="input" value={desc} onChange={e => setDesc(e.target.value)} placeholder="Optional description" />
                         </Field>
-                        {type !== 'none' && (
-                          <Field label="" hint="">
-                            <div className="flex gap-2 flex-wrap items-center">
-                              <Toggle disabled={readOnly} value={cfg[`fdd_${n}_turbo` as keyof VMConfig] as boolean} onChange={v => set(`fdd_${n}_turbo` as any, v)} label="Turbo" />
-                              <Toggle disabled={readOnly} value={cfg[`fdd_${n}_check_bpb` as keyof VMConfig] as boolean} onChange={v => set(`fdd_${n}_check_bpb` as any, v)} label="Check BPB" />
-                            </div>
-                          </Field>
-                        )}
-                        {type !== 'none' && vmId && (
-                          <Field label="Image" hint="Floppy image to mount at startup">
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => !readOnly && setImagePicker({ key: `fdd_${n}_fn`, kind: 'floppy' })}
-                                disabled={readOnly}
-                                className="btn-secondary text-xs flex-1 justify-start font-mono truncate"
-                                title={fn || 'No image selected'}
-                              >
-                                <FolderOpen className="w-3.5 h-3.5 shrink-0" />
-                                <span className="truncate">{fn ? fn.split('/').pop() : '— No image —'}</span>
-                              </button>
-                              {fn && !readOnly && (
-                                <button onClick={() => set(`fdd_${n}_fn` as any, '')} className="btn-ghost p-1.5 text-slate-400 hover:text-red-500" title="Eject">
-                                  <X className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                            </div>
-                          </Field>
-                        )}
-                      </div>
-                    )
-                  })}
-                </FieldGroup>
+                        <Field label="Group">
+                          <div className="flex items-center gap-2">
+                            {groupId && (() => { const g = groups.find(g => g.id === groupId); return g ? <span className="w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: g.color }} /> : null })()}
+                            <select className="input flex-1" value={groupId ?? ''} onChange={e => setGroupId(e.target.value ? parseInt(e.target.value) : null)}>
+                              <option value="">No group</option>
+                              {groups.slice().sort((a, b) => a.name.localeCompare(b.name)).map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+                            </select>
+                          </div>
+                          {(() => {
+                            const g = groups.find(g => g.id === groupId); return g?.network_enabled ? (
+                              <p className="text-xs text-blue-500 dark:text-blue-400 mt-1 flex items-center gap-1"><Network className="w-3 h-3" />Networking enabled — VMs in this group share a private LAN</p>
+                            ) : g && !g.network_enabled ? (
+                              <p className="text-xs text-slate-400 mt-1">No networking — VMs in this group are isolated</p>
+                            ) : null
+                          })()}
+                        </Field>
+                        <FieldGroup label="Sharing">
+                          <Field label="Shared with user" hint="Select users who can access this VM">
+                            {(() => {
+                              const selectedGroup = groups.find(g => g.id === groupId);
+                              const isGroupShared = selectedGroup && selectedGroup.shared_with_user_ids && selectedGroup.shared_with_user_ids.length > 0;
+                              const effectiveSharedWith = isGroupShared ? selectedGroup.shared_with_user_ids! : sharedWith;
 
-                {vmId && (
-                  <FieldGroup label="Media Files">
-                    <div className="space-y-2">
-                      {mediaFiles.filter(f => /\.(img|ima|vfd|flp)$/i.test(f.name)).map(f => (
-                        <div key={f.name} className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                          <span className="font-mono text-slate-700 dark:text-slate-300 truncate flex-1">{f.name}</span>
-                          <span className="text-xs text-slate-400 ml-3 flex-shrink-0">{formatBytes(f.size)}</span>
-                          <button onClick={() => handleMediaDelete(f.name)} className="ml-2 p-1 text-red-400 hover:text-red-600 flex-shrink-0">
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
-                      {mediaFiles.filter(f => /\.(img|ima|vfd|flp)$/i.test(f.name)).length === 0 && (
-                        <p className="text-xs text-slate-400 italic">No floppy images uploaded.</p>
-                      )}
-                      <div className="pt-1 space-y-2">
-                        <input ref={fileInputRef} type="file" className="hidden"
-                          accept=".001,.002,.003,.004,.005,.006,.007,.008,.009,.010,.12,.144,.360,.720,.86f,.bin,.cq,.cqm,.ddi,.dsk,.fdi,.fdf,.flp,.hdm,.ima,.imd,.img,.json,.mfm,.td0,.vfd,.xdf"
-                          onChange={handleMediaUpload} />
-                        <div className="flex items-center gap-3">
-                          <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="btn-secondary text-xs">
-                            <Upload className="w-3.5 h-3.5" />
-                            {uploading ? 'Uploading…' : 'Upload Floppy Image'}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </FieldGroup>
-                )}
-              </>
-            )}
-
-            {/* ── CD-ROM Drives ────────────────────────────────────────── */}
-            {activeTab === 'cdrom' && hw && (
-              <>
-                <FieldGroup label="Drives">
-                  {([1, 2, 3, 4] as const).map(i => {
-                    const n = `0${i}` as '01' | '02' | '03' | '04'
-                    const enabled = cfg[`cdrom_${n}_enabled` as keyof VMConfig] as boolean
-                    const speed = cfg[`cdrom_${n}_speed` as keyof VMConfig] as number
-                    const driveType = cfg[`cdrom_${n}_drive_type` as keyof VMConfig] as string
-                    const fn = cfg[`cdrom_${n}_fn` as keyof VMConfig] as string
-                    const ideCh = cfg[`cdrom_${n}_ide_channel` as keyof VMConfig] as string
-                    const freeChannels = availableIdeChannels.filter(ch => !channelMap[ch] || channelMap[ch] === `CD-ROM ${i}`)
-                    const prevCdN = i > 1 ? `0${i - 1}` : null
-                    const prevCdEnabled = prevCdN ? (cfg[`cdrom_${prevCdN}_enabled` as keyof VMConfig] as boolean) : true
-                    return (
-                      <div key={i} className="p-4 rounded-lg border border-slate-200 dark:border-slate-700 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">CD-ROM Drive {i}</span>
-                          <Toggle
-                            disabled={readOnly || !prevCdEnabled}
-                            value={enabled}
-                            onChange={v => {
-                              set(`cdrom_${n}_enabled` as any, v)
-                              // If disabling, also disable subsequent drives
-                              if (!v) {
-                                for (let j = i + 1; j <= 4; j++) {
-                                  const jn = `0${j}`
-                                  set(`cdrom_${jn}_enabled` as any, false)
-                                  set(`cdrom_${jn}_fn` as any, '')
-                                }
+                              if (isGroupShared) {
+                                return (
+                                  <div className="space-y-3">
+                                    <p className="text-xs text-amber-500 dark:text-amber-400 font-medium">
+                                      Permissions are inherited from the group "{selectedGroup.name}".
+                                      To assign specific permissions, remove this VM from the group first.
+                                    </p>
+                                    <div className="flex flex-wrap gap-2 opacity-60 pointer-events-none">
+                                      {users
+                                        .filter(u => effectiveSharedWith.includes(u.id))
+                                        .sort((a, b) => a.username.localeCompare(b.username))
+                                        .map(u => (
+                                          <span key={u.id} className="inline-flex items-center gap-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-md text-sm font-medium">
+                                            {u.username}
+                                          </span>
+                                        ))}
+                                    </div>
+                                  </div>
+                                );
                               }
-                            }}
-                            label="Enable"
-                          />
-                        </div>
-                        {enabled && (
-                          <>
-                            <Field label="Drive Model" hint="Emulated drive identity reported to the OS">
-                              <select className="input text-xs" disabled={readOnly} value={driveType} onChange={e => {
-                                const sel = hw?.cdrom_drive_types.find(d => d.id === e.target.value)
-                                set(`cdrom_${n}_drive_type` as any, e.target.value)
-                                if (sel && sel.id) {
-                                  // Auto-set speed from the drive's rated speed if it embeds "(Nx)" in the name
-                                  const m = sel.name.match(/\((\d+)x\)/)
-                                  if (m) set(`cdrom_${n}_speed` as any, parseInt(m[1]))
-                                }
-                              }}>
-                                <option value="">— 86Box default —</option>
-                                {hw?.cdrom_drive_types.map(d => (
-                                  <option key={d.id} value={d.id}>{d.name}</option>
-                                ))}
-                              </select>
-                            </Field>
-                            <Field label="IDE Channel" hint="Avoid conflicts with HDDs">
-                              {freeChannels.length === 0 ? (
-                                <p className="text-xs text-red-500">No free IDE channels — enable more via Controllers tab or remove another drive.</p>
-                              ) : (
-                                <select className="input" disabled={readOnly} value={freeChannels.includes(ideCh) ? ideCh : freeChannels[0]} onChange={e => set(`cdrom_${n}_ide_channel` as any, e.target.value)}>
-                                  {freeChannels.map(ch => (
-                                    <option key={ch} value={ch}>{IDE_CHANNEL_LABELS[ch]} ({ch})</option>
-                                  ))}
-                                </select>
-                              )}
-                            </Field>
-                            <Field label="Speed" hint="Override rated speed (ignored when a specific drive model is selected)">
-                              <div className="flex items-center gap-3">
-                                <input type="range" min={1} max={72} value={speed} onChange={e => set(`cdrom_${n}_speed` as any, parseInt(e.target.value))} className="flex-1 accent-blue-600" />
-                                <span className="text-sm text-slate-700 dark:text-slate-300 w-12 text-right tabular-nums">{speed}×</span>
-                              </div>
-                            </Field>
-                            {vmId && (
-                              <Field label="ISO Image" hint="CD/DVD image to mount at startup">
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    onClick={() => !readOnly && setImagePicker({ key: `cdrom_${n}_fn`, kind: 'cdrom' })}
-                                    disabled={readOnly}
-                                    className="btn-secondary text-xs flex-1 justify-start font-mono truncate"
-                                    title={fn || 'No image selected'}
-                                  >
-                                    <FolderOpen className="w-3.5 h-3.5 shrink-0" />
-                                    <span className="truncate">{fn ? fn.split('/').pop() : '— No image —'}</span>
-                                  </button>
-                                  {fn && !readOnly && (
-                                    <button onClick={() => set(`cdrom_${n}_fn` as any, '')} className="btn-ghost p-1.5 text-slate-400 hover:text-red-500" title="Eject">
-                                      <X className="w-3.5 h-3.5" />
-                                    </button>
+
+                              if (!currentUser?.is_admin) {
+                                return <p className="text-xs text-slate-500 mt-2">Only Admins can share VMs.</p>;
+                              }
+
+                              return (
+                                <div className="space-y-3">
+                                  <div className="flex flex-wrap gap-2">
+                                    {users
+                                      .filter(u => sharedWith.includes(u.id))
+                                      .sort((a, b) => a.username.localeCompare(b.username))
+                                      .map(u => (
+                                        <span key={u.id} className="inline-flex items-center gap-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-md text-sm font-medium">
+                                          {u.username}
+                                          <button type="button" onClick={() => setSharedWith(sharedWith.filter(id => id !== u.id))} className="hover:text-red-500 focus:outline-none transition-colors">
+                                            <X className="w-3.5 h-3.5" />
+                                          </button>
+                                        </span>
+                                      ))}
+                                    {sharedWith.length === 0 && <span className="text-sm text-slate-500 italic">Not shared with any user.</span>}
+                                  </div>
+                                  {users.filter(u => u.id !== currentUser.id && !sharedWith.includes(u.id)).length > 0 && (
+                                    <select
+                                      className="input w-full text-sm"
+                                      value=""
+                                      onChange={e => {
+                                        if (e.target.value) setSharedWith([...sharedWith, parseInt(e.target.value)])
+                                      }}
+                                    >
+                                      <option value="">+ Add another user...</option>
+                                      {users
+                                        .filter(u => u.id !== currentUser.id && !sharedWith.includes(u.id))
+                                        .sort((a, b) => a.username.localeCompare(b.username))
+                                        .map(u => (
+                                          <option key={u.id} value={u.id}>{u.username}</option>
+                                        ))}
+                                    </select>
                                   )}
                                 </div>
+                              );
+                            })()}
+                          </Field>
+                        </FieldGroup>
+                      </FieldGroup>
+                    </>
+                  )}
+
+                  {/* ── Machine ─────────────────────────────────────────────── */}
+                  {activeTab === 'machine' && hw && (
+                    <>
+                      <FieldGroup label="System">
+                        <Field label="Machine" hint="System board / chipset">
+                          <Select
+                            value={cfg.machine}
+                            onChange={v => set('machine', v)}
+                            options={hw.machines}
+                            grouped
+                          />
+                        </Field>
+                        <Field label="CPU" hint="Processor family">
+                          <select className="input" value={cfg.cpu_family} onChange={e => set('cpu_family', e.target.value)}>
+                            {availableCPUs.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                            {availableCPUs.length === 0 && <option value={cfg.cpu_family}>{cfg.cpu_family}</option>}
+                          </select>
+                        </Field>
+                        <Field label="CPU Speed">
+                          {availableSpeeds.length > 0 ? (
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
+                                <span>{availableSpeeds[0]} MHz</span>
+                                <span className="font-medium text-slate-900 dark:text-white">
+                                  {availableSpeeds[cfg.cpu_speed] ?? availableSpeeds[0]} MHz
+                                </span>
+                                <span>{availableSpeeds[availableSpeeds.length - 1]} MHz</span>
+                              </div>
+                              <input
+                                type="range"
+                                min={0}
+                                max={availableSpeeds.length - 1}
+                                value={Math.min(cfg.cpu_speed, availableSpeeds.length - 1)}
+                                onChange={e => set('cpu_speed', parseInt(e.target.value))}
+                                className="w-full accent-blue-600"
+                              />
+                              <div className="flex flex-wrap gap-1">
+                                {availableSpeeds.map((s, idx) => (
+                                  <button
+                                    key={idx}
+                                    onClick={() => set('cpu_speed', idx)}
+                                    className={clsx(
+                                      'text-xs px-2 py-0.5 rounded border transition-colors',
+                                      cfg.cpu_speed === idx
+                                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                                        : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-slate-300'
+                                    )}
+                                  >
+                                    {s} MHz
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-slate-400">Select a CPU family first</span>
+                          )}
+                        </Field>
+                      </FieldGroup>
+                      <FieldGroup label="Processor">
+                        <Field label="Dynamic Recompiler" hint="Faster emulation for 486+">
+                          <Toggle disabled={readOnly} value={cfg.cpu_use_dynarec} onChange={v => set('cpu_use_dynarec', v)} label="Enable" />
+                        </Field>
+                        <Field label="Wait States" hint="CPU bus wait cycles">
+                          <input type="number" min={0} max={15} className="input w-24" value={cfg.cpu_waitstates} onChange={e => set('cpu_waitstates', parseInt(e.target.value))} />
+                        </Field>
+                        <Field label="FPU">
+                          <select className="input" value={cfg.fpu_type} onChange={e => set('fpu_type', e.target.value)}>
+                            <option value="none">None</option>
+                            <option value="builtin">Built-in</option>
+                            <option value="8087">8087</option>
+                            <option value="287">287</option>
+                            <option value="387">387</option>
+                          </select>
+                        </Field>
+                        <Field label="Soft-float FPU" hint="Software FPU emulation">
+                          <Toggle disabled={readOnly} value={cfg.fpu_softfloat} onChange={v => set('fpu_softfloat', v)} />
+                        </Field>
+                      </FieldGroup>
+                      <FieldGroup label="Memory">
+                        <Field label="RAM" hint="System memory">
+                          <MemorySlider
+                            value={cfg.mem_size}
+                            onChange={v => set('mem_size', v)}
+                            min={machineRamMin}
+                            max={machineRamMax}
+                          />
+                        </Field>
+                      </FieldGroup>
+                      <FieldGroup label="Clock">
+                        <Field label="Time Sync">
+                          <select className="input w-40" value={cfg.time_sync} onChange={e => set('time_sync', e.target.value)}>
+                            <option value="disabled">Disabled</option>
+                            <option value="local">Local Time</option>
+                            <option value="utc">UTC</option>
+                          </select>
+                        </Field>
+                      </FieldGroup>
+                    </>
+                  )}
+
+                  {/* ── Display ─────────────────────────────────────────────── */}
+                  {activeTab === 'display' && hw && (
+                    <>
+                      <FieldGroup label="Video Card">
+                        <Field label="Video Card">
+                          <Select value={cfg.gfxcard} onChange={v => set('gfxcard', v)} options={compatVideoCards} grouped />
+                          <DeviceSettings
+                            device={hw?.video_cards.find(c => c.id === cfg.gfxcard)}
+                            settings={devSettings(cfg.gfxcard)}
+                            onChange={(k, v) => setDeviceSettings(cfg.gfxcard, k, v)}
+                          />
+                        </Field>
+                        <Field label="Secondary Monitors" hint="Show dual monitor support">
+                          <Toggle disabled={readOnly} value={cfg.show_second_monitors} onChange={v => set('show_second_monitors', v)} />
+                        </Field>
+                      </FieldGroup>
+                      <FieldGroup label="3dfx Voodoo">
+                        <Field label="Voodoo Card" hint="Add Voodoo 3D accelerator">
+                          <Toggle disabled={readOnly} value={cfg.voodoo_enabled} onChange={v => set('voodoo_enabled', v)} label="Enable Voodoo" />
+                        </Field>
+                        {cfg.voodoo_enabled && voodooTypes && (
+                          <Field label="Voodoo Type">
+                            <select className="input" value={cfg.voodoo_type} onChange={e => set('voodoo_type', e.target.value)}>
+                              {voodooTypes.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+                            </select>
+                          </Field>
+                        )}
+                      </FieldGroup>
+                    </>
+                  )}
+
+                  {/* ── Sound ───────────────────────────────────────────────── */}
+                  {activeTab === 'sound' && hw && (
+                    <>
+                      <FieldGroup label="Audio">
+                        <Field label="Sound Card">
+                          <Select value={cfg.sndcard} onChange={v => set('sndcard', v)} options={compatSoundCards} grouped />
+                          <DeviceSettings
+                            device={hw?.sound_cards.find(c => c.id === cfg.sndcard)}
+                            settings={devSettings(cfg.sndcard)}
+                            onChange={(k, v) => setDeviceSettings(cfg.sndcard, k, v)}
+                          />
+                        </Field>
+                        <Field label="FM Driver" hint="OPL synthesizer accuracy vs. speed">
+                          <select className="input w-48" value={cfg.fm_driver} onChange={e => set('fm_driver', e.target.value)}>
+                            <option value="nuked">Nuked OPL (accurate)</option>
+                            <option value="ymfm">YMFM (faster)</option>
+                          </select>
+                        </Field>
+                        <Field label="Float Audio" hint="32-bit float mixing (higher quality)">
+                          <Toggle disabled={readOnly} value={cfg.sound_is_float} onChange={v => set('sound_is_float', v)} />
+                        </Field>
+                      </FieldGroup>
+                      <FieldGroup label="MIDI">
+                        <Field label="MIDI Output">
+                          <Select value={cfg.midi_device} onChange={v => set('midi_device', v)} options={hw.midi_devices} />
+                        </Field>
+                        <Field label="Standalone MPU-401" hint="Add MPU-401 without a sound card">
+                          <Toggle disabled={readOnly} value={cfg.mpu401_standalone_enable} onChange={v => set('mpu401_standalone_enable', v)} />
+                        </Field>
+                      </FieldGroup>
+                    </>
+                  )}
+
+                  {/* ── Network ─────────────────────────────────────────────── */}
+                  {activeTab === 'network' && hw && (
+                    <>
+                      <FieldGroup label="Network Card">
+                        <Field label="Network Card">
+                          <Select value={cfg.net_card} onChange={v => set('net_card', v)} options={compatNetworkCards} grouped />
+                          <DeviceSettings
+                            device={hw?.network_cards.find(c => c.id === cfg.net_card)}
+                            settings={devSettings(cfg.net_card)}
+                            onChange={(k, v) => setDeviceSettings(cfg.net_card, k, v)}
+                          />
+                        </Field>
+                        {cfg.net_card !== 'none' && (
+                          <>
+                            {groupNetworking && (
+                              <Field label="Use Group Network" hint="Connect this adapter to the group's private LAN bridge">
+                                <Toggle value={cfg.net_use_group ?? true} onChange={v => set('net_use_group', v)} />
                               </Field>
+                            )}
+                            {groupNetworking && (cfg.net_use_group ?? true) && (
+                              <p className="text-xs text-blue-500 dark:text-blue-400 flex items-center gap-1">
+                                <Network className="w-3 h-3 flex-shrink-0" />
+                                Adapter will connect to the group bridge via TAP at start time — slirp/pcap settings are ignored.
+                              </p>
+                            )}
+                            {(!groupNetworking || !(cfg.net_use_group ?? true)) && (
+                              <>
+                                <Field label="Network Type" hint="How the VM connects to the network">
+                                  <select className="input w-48" value={cfg.net_type} onChange={e => set('net_type', e.target.value)}>
+                                    <option value="slirp">SLiRP (NAT) — recommended</option>
+                                    <option value="pcap">PCap (bridged)</option>
+                                    <option value="vde">VDE</option>
+                                  </select>
+                                </Field>
+                                {cfg.net_type === 'pcap' && (
+                                  <Field label="Host Device" hint="Network interface to bridge to">
+                                    <input className="input" value={cfg.net_host_dev} onChange={(e: React.ChangeEvent<HTMLInputElement>) => set('net_host_dev', e.target.value)} placeholder="eth0" />
+                                  </Field>
+                                )}
+                              </>
                             )}
                           </>
                         )}
-                      </div>
-                    )
-                  })}
-                </FieldGroup>
+                      </FieldGroup>
+                    </>
+                  )}
 
-                {vmId && (
-                  <FieldGroup label="ISO / Disc Images">
-                    <div className="space-y-2">
-                      {mediaFiles.filter(f => /\.(iso|bin|cue)$/i.test(f.name)).map(f => (
-                        <div key={f.name} className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                          <span className="font-mono text-slate-700 dark:text-slate-300 truncate flex-1">{f.name}</span>
-                          <span className="text-xs text-slate-400 ml-3 flex-shrink-0">{formatBytes(f.size)}</span>
-                          <button onClick={() => handleMediaDelete(f.name)} className="ml-2 p-1 text-red-400 hover:text-red-600 flex-shrink-0">
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
-                      {mediaFiles.filter(f => /\.(iso|bin|cue)$/i.test(f.name)).length === 0 && (
-                        <p className="text-xs text-slate-400 italic">No ISO images uploaded.</p>
-                      )}
-                      <div className="pt-1 space-y-2">
-                        <input ref={fileInputRef} type="file" className="hidden"
-                          accept=".iso,.bin,.img,.cue,.mds,.mdx,.viso"
-                          onChange={handleMediaUpload} />
-                        <div className="flex items-center gap-3">
-                          <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="btn-secondary text-xs">
-                            <Upload className="w-3.5 h-3.5" />
-                            {uploading ? 'Uploading…' : 'Upload ISO Image'}
-                          </button>
-                          {uploading && uploadProgress !== null && (
-                            <div className="flex items-center gap-1.5 text-slate-400">
-                              <div className="w-24 h-1.5 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
-                                <div className="h-full bg-blue-500 rounded-full transition-all duration-150" style={{ width: `${uploadProgress}%` }} />
+                  {/* ── Controllers ─────────────────────────────────────────── */}
+                  {activeTab === 'controllers' && hw && (
+                    <>
+                      <FieldGroup label="Hard Disk Controller">
+                        <Field label="HDC Controller" hint="Primary hard disk controller">
+                          <Select value={cfg.hdd_controller} onChange={setHddController} options={compatHddControllers} grouped />
+                          <DeviceSettings
+                            device={hw?.hdd_controllers.find(c => c.id === cfg.hdd_controller)}
+                            settings={devSettings(cfg.hdd_controller)}
+                            onChange={(k, v) => setDeviceSettings(cfg.hdd_controller, k, v)}
+                          />
+                        </Field>
+                        <Field label="3rd IDE Channel" hint="Enables tertiary IDE (channels 2:0 / 2:1)">
+                          <Toggle disabled={readOnly} value={cfg.ide_ter_enabled} onChange={v => toggleIdeChannel('ter', v)} />
+                        </Field>
+                        <Field label="4th IDE Channel" hint="Enables quaternary IDE (channels 3:0 / 3:1); requires 3rd">
+                          <Toggle disabled={readOnly} value={cfg.ide_qua_enabled} onChange={v => toggleIdeChannel('qua', v)} />
+                        </Field>
+                      </FieldGroup>
+
+                      <FieldGroup label="SCSI">
+                        <Field label="SCSI Card">
+                          <Select
+                            value={cfg.scsi_card}
+                            onChange={v => set('scsi_card', v)}
+                            options={[
+                              { id: 'none', name: 'None' },
+                              ...compatScsiCards.filter(c => c.id !== 'none'),
+                            ]}
+                            grouped
+                          />
+                          <DeviceSettings
+                            device={hw?.scsi_cards.find(c => c.id === cfg.scsi_card)}
+                            settings={devSettings(cfg.scsi_card)}
+                            onChange={(k, v) => setDeviceSettings(cfg.scsi_card, k, v)}
+                          />
+                        </Field>
+                      </FieldGroup>
+
+                      <FieldGroup label="Floppy Controller">
+                        <Field label="FDC Card" hint="Add-in floppy controller (most machines have built-in)">
+                          <Select
+                            value={cfg.fdc_card}
+                            onChange={v => set('fdc_card', v)}
+                            options={[
+                              { id: 'none', name: 'None (use built-in)' },
+                              ...compatFdcCards.filter(c => c.id !== 'none'),
+                            ]}
+                            grouped
+                          />
+                        </Field>
+                      </FieldGroup>
+                    </>
+                  )}
+
+                  {/* ── Hard Disks ───────────────────────────────────────────── */}
+                  {activeTab === 'disks' && hw && (() => {
+                    const enabledSlots = [1, 2, 3, 4, 5, 6, 7, 8].filter(i => {
+                      const n = String(i).padStart(2, '0')
+                      return cfg[`hdd_${n}_enabled` as keyof VMConfig] as boolean
+                    })
+                    const nextFreeSlot = [1, 2, 3, 4, 5, 6, 7, 8].find(i => {
+                      const n = String(i).padStart(2, '0')
+                      return !(cfg[`hdd_${n}_enabled` as keyof VMConfig] as boolean)
+                    })
+                    return (
+                      <FieldGroup label="Hard Disks">
+                        {enabledSlots.length === 0 && (
+                          <p className="text-sm text-slate-400 italic">No hard disks configured. Click &ldquo;Add Hard Disk&rdquo; to get started.</p>
+                        )}
+                        {enabledSlots.map(i => {
+                          const n = String(i).padStart(2, '0')
+                          const bus = cfg[`hdd_${n}_bus` as keyof VMConfig] as string
+                          const size = cfg[`hdd_${n}_size_mb` as keyof VMConfig] as number
+                          const speed = cfg[`hdd_${n}_speed` as keyof VMConfig] as string
+                          const ideChannel = cfg[`hdd_${n}_ide_channel` as keyof VMConfig] as string
+                          const freeChannels = availableIdeChannels.filter(ch => !channelMap[ch] || channelMap[ch] === `HDD ${i}`)
+                          // Only offer buses valid for the current controller
+                          const busOptions = [
+                            ...(!isMfmController && !isEsdiController ? [{ v: 'ide', l: 'IDE' }] : []),
+                            ...(isMfmController ? [{ v: 'mfm', l: 'MFM/RLL' }] : []),
+                            ...(isEsdiController ? [{ v: 'esdi', l: 'ESDI' }] : []),
+                            ...(scsiAvailable ? [{ v: 'scsi', l: 'SCSI' }] : []),
+                          ]
+                          const rawCyl = cfg[`hdd_${n}_cylinders` as keyof VMConfig] as number | null
+                          const rawHds = cfg[`hdd_${n}_heads` as keyof VMConfig] as number | null
+                          const rawSpt = cfg[`hdd_${n}_spt` as keyof VMConfig] as number | null
+                          const chs = (rawCyl && rawHds && rawSpt) ? { cyl: rawCyl, heads: rawHds, spt: rawSpt } : calcChsFromSize(size)
+                          const cyl = chs.cyl, hds = chs.heads, spt = chs.spt
+                          const typeIndex = findHddTypeIndex(cyl, hds, spt)
+                          const limits = hddBusLimits(bus)
+                          const sizeMb = calcSizeFromChs(cyl, hds, spt)
+                          return (
+                            <div key={i} className="p-4 rounded-lg border border-slate-200 dark:border-slate-700 space-y-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Hard Disk {i}</span>
+                                {!readOnly && (
+                                  <button
+                                    onClick={() => set(`hdd_${n}_enabled` as any, false)}
+                                    className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                                    title="Remove this disk"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                )}
                               </div>
-                              <span className="text-xs tabular-nums">{uploadProgress}%</span>
+                              <div className="space-y-3">
+                                {/* Type dropdown */}
+                                <div>
+                                  <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Type (CHS Preset)</label>
+                                  <select className="input text-xs" disabled={readOnly} value={typeIndex} onChange={e => {
+                                    const idx = parseInt(e.target.value)
+                                    if (idx < 127) {
+                                      const [c, h, s] = HDD_TABLE[idx]
+                                      set(`hdd_${n}_cylinders` as any, c)
+                                      set(`hdd_${n}_heads` as any, h)
+                                      set(`hdd_${n}_spt` as any, s)
+                                      set(`hdd_${n}_size_mb` as any, calcSizeFromChs(c, h, s))
+                                    } else if (idx === 128) {
+                                      set(`hdd_${n}_heads` as any, 16)
+                                      set(`hdd_${n}_spt` as any, 63)
+                                      set(`hdd_${n}_size_mb` as any, calcSizeFromChs(cyl, 16, 63))
+                                    }
+                                  }}>
+                                    {HDD_TABLE.map(([c, h, s], idx) => {
+                                      const mb = calcSizeFromChs(c, h, s)
+                                      return <option key={idx} value={idx}>{mb} MB (CHS: {c}, {h}, {s})</option>
+                                    })}
+                                    <option value={127}>Custom…</option>
+                                    <option value={128}>Custom (large)…</option>
+                                  </select>
+                                </div>
+                                {/* CHS + Size row */}
+                                <div className="grid grid-cols-4 gap-2">
+                                  <div>
+                                    <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Cylinders</label>
+                                    <input type="number" min={1} max={limits.maxCyl} className="input text-xs" disabled={readOnly}
+                                      value={cyl}
+                                      onChange={e => {
+                                        const v = Math.min(parseInt(e.target.value) || 1, limits.maxCyl)
+                                        set(`hdd_${n}_cylinders` as any, v)
+                                        set(`hdd_${n}_size_mb` as any, calcSizeFromChs(v, hds, spt))
+                                      }} />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Heads</label>
+                                    <input type="number" min={1} max={limits.maxHeads} className="input text-xs" disabled={readOnly}
+                                      value={hds}
+                                      onChange={e => {
+                                        const v = Math.min(parseInt(e.target.value) || 1, limits.maxHeads)
+                                        set(`hdd_${n}_heads` as any, v)
+                                        set(`hdd_${n}_size_mb` as any, calcSizeFromChs(cyl, v, spt))
+                                      }} />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Sectors/Track</label>
+                                    <input type="number" min={1} max={limits.maxSpt} className="input text-xs" disabled={readOnly}
+                                      value={spt}
+                                      onChange={e => {
+                                        const v = Math.min(parseInt(e.target.value) || 1, limits.maxSpt)
+                                        set(`hdd_${n}_spt` as any, v)
+                                        set(`hdd_${n}_size_mb` as any, calcSizeFromChs(cyl, hds, v))
+                                      }} />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Size (MB)</label>
+                                    <input type="number" min={1} max={131072} className="input text-xs" disabled={readOnly}
+                                      value={sizeMb}
+                                      onChange={e => {
+                                        const mb = Math.max(1, parseInt(e.target.value) || 1)
+                                        const chsNew = calcChsFromSize(mb)
+                                        set(`hdd_${n}_cylinders` as any, chsNew.cyl)
+                                        set(`hdd_${n}_heads` as any, chsNew.heads)
+                                        set(`hdd_${n}_spt` as any, chsNew.spt)
+                                        set(`hdd_${n}_size_mb` as any, mb)
+                                      }} />
+                                  </div>
+                                </div>
+                                {/* Bus + Channel row */}
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div>
+                                    <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Bus</label>
+                                    <select className="input text-xs" disabled={readOnly} value={bus} onChange={e => set(`hdd_${n}_bus` as any, e.target.value)}>
+                                      {busOptions.map(b => <option key={b.v} value={b.v}>{b.l}</option>)}
+                                    </select>
+                                  </div>
+                                  {bus === 'ide' && (
+                                    <div>
+                                      <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">IDE Channel</label>
+                                      {freeChannels.length === 0 ? (
+                                        <p className="text-xs text-red-500 mt-2">No free IDE channels — enable more via Controllers tab.</p>
+                                      ) : (
+                                        <select className="input text-xs" disabled={readOnly} value={freeChannels.includes(ideChannel) ? ideChannel : freeChannels[0]} onChange={e => set(`hdd_${n}_ide_channel` as any, e.target.value)}>
+                                          {freeChannels.map(ch => <option key={ch} value={ch}>{IDE_CHANNEL_LABELS[ch]} ({ch})</option>)}
+                                        </select>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                                {/* Speed/Model row */}
+                                <div>
+                                  <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Model / Speed Era</label>
+                                  <select className="input text-xs" disabled={readOnly} value={speed} onChange={e => {
+                                    const id = e.target.value
+                                    set(`hdd_${n}_speed` as any, id)
+                                    const preset = hw?.hdd_speed_presets.find(p => p.id === id)
+                                    if (!preset) return
+                                    const parsed = parseHddPreset(preset)
+                                    if (!parsed) return
+                                    if (busOptions.some(b => b.v === parsed.bus)) set(`hdd_${n}_bus` as any, parsed.bus)
+                                  }}>
+                                    {hddSpeedGroups.map(([cat, presets]: [string, HardwareOption[]]) => (
+                                      <optgroup key={cat} label={cat}>
+                                        {presets.map((p: HardwareOption) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                      </optgroup>
+                                    ))}
+                                  </select>
+                                </div>
+                              </div>
                             </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </FieldGroup>
-                )}
-              </>
-            )}
+                          )
+                        })}
+                        {!readOnly && nextFreeSlot && (
+                          <button
+                            onClick={() => {
+                              const n = String(nextFreeSlot).padStart(2, '0')
+                              set(`hdd_${n}_enabled` as any, true)
+                            }}
+                            className="btn-secondary w-full justify-center"
+                          >
+                            <Plus className="w-4 h-4" />
+                            Add Hard Disk
+                          </button>
+                        )}
+                        {!nextFreeSlot && (
+                          <p className="text-xs text-slate-400 italic text-center">Maximum of 8 hard disks reached.</p>
+                        )}
+                      </FieldGroup>
+                    )
+                  })()}
 
-            {/* ── Ports & Input ────────────────────────────────────────── */}
-            {activeTab === 'ports' && hw && (
-              <>
-                <FieldGroup label="Mouse">
-                  <Field label="Mouse Type">
-                    <Select value={cfg.mouse_type} onChange={v => set('mouse_type', v)} options={hw.mouse_types} />
-                  </Field>
-                </FieldGroup>
-                <FieldGroup label="Joystick">
-                  <Field label="Joystick">
-                    <Select value={cfg.joystick_type} onChange={v => set('joystick_type', v)} options={hw.joystick_types} />
-                  </Field>
-                </FieldGroup>
-                <FieldGroup label="Keyboard">
-                  <Field label="Keyboard Type">
-                    <select className="input" value={cfg.keyboard_type} onChange={e => set('keyboard_type', e.target.value)}>
-                      <option value="keyboard_pc_xt">PC/XT Keyboard</option>
-                      <option value="keyboard_at">AT Keyboard</option>
-                      <option value="keyboard_mf2">MF2 (101/102 key)</option>
-                      <option value="keyboard_mf2_jp">MF2 Japanese</option>
-                      <option value="keyboard_ps2">PS/2 Keyboard</option>
-                    </select>
-                  </Field>
-                </FieldGroup>
-                <FieldGroup label="COM Ports">
-                  {([1, 2, 3, 4] as const).map(i => (
-                    <Field key={i} label={`COM${i}`}>
-                      <Toggle
-                        value={cfg[`com_${i}_enabled` as keyof VMConfig] as boolean}
-                        onChange={v => set(`com_${i}_enabled` as any, v)}
-                        label="Enable"
-                      />
-                    </Field>
-                  ))}
-                </FieldGroup>
-                <FieldGroup label="LPT Ports">
-                  {([1, 2, 3] as const).map(i => (
-                    <Field key={i} label={`LPT${i}`}>
-                      <Toggle
-                        value={cfg[`lpt_${i}_enabled` as keyof VMConfig] as boolean}
-                        onChange={v => set(`lpt_${i}_enabled` as any, v)}
-                        label="Enable"
-                      />
-                    </Field>
-                  ))}
-                </FieldGroup>
-              </>
-            )}
+                  {/* ── Floppy Drives ────────────────────────────────────────── */}
+                  {activeTab === 'floppy' && hw && (
+                    <>
+                      <FieldGroup label="Drives">
+                        {([1, 2, 3, 4] as const).map(i => {
+                          const n = `0${i}` as '01' | '02' | '03' | '04'
+                          const type = cfg[`fdd_${n}_type` as keyof VMConfig] as string
+                          const fn = cfg[`fdd_${n}_fn` as keyof VMConfig] as string
+                          const prevN = i > 1 ? `0${i - 1}` : null
+                          const prevEnabled = prevN ? (cfg[`fdd_${prevN}_type` as keyof VMConfig] as string) !== 'none' : true
+                          return (
+                            <div key={i} className="space-y-2">
+                              <Field label={`Drive ${i}`}>
+                                <Select
+                                  value={type}
+                                  disabled={readOnly || !prevEnabled}
+                                  onChange={v => {
+                                    set(`fdd_${n}_type` as any, v)
+                                    // If disabling this drive, also clear subsequent drives
+                                    if (v === 'none') {
+                                      for (let j = i + 1; j <= 4; j++) {
+                                        const jn = `0${j}`
+                                        set(`fdd_${jn}_type` as any, 'none')
+                                        set(`fdd_${jn}_fn` as any, '')
+                                      }
+                                    }
+                                  }}
+                                  options={hw.floppy_types}
+                                />
+                              </Field>
+                              {type !== 'none' && (
+                                <Field label="" hint="">
+                                  <div className="flex gap-2 flex-wrap items-center">
+                                    <Toggle disabled={readOnly} value={cfg[`fdd_${n}_turbo` as keyof VMConfig] as boolean} onChange={v => set(`fdd_${n}_turbo` as any, v)} label="Turbo" />
+                                    <Toggle disabled={readOnly} value={cfg[`fdd_${n}_check_bpb` as keyof VMConfig] as boolean} onChange={v => set(`fdd_${n}_check_bpb` as any, v)} label="Check BPB" />
+                                  </div>
+                                </Field>
+                              )}
+                              {type !== 'none' && vmId && (
+                                <Field label="Image" hint="Floppy image to mount at startup">
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      onClick={() => !readOnly && setImagePicker({ key: `fdd_${n}_fn`, kind: 'floppy' })}
+                                      disabled={readOnly}
+                                      className="btn-secondary text-xs flex-1 justify-start font-mono truncate"
+                                      title={fn || 'No image selected'}
+                                    >
+                                      <FolderOpen className="w-3.5 h-3.5 shrink-0" />
+                                      <span className="truncate">{fn ? fn.split('/').pop() : '— No image —'}</span>
+                                    </button>
+                                    {fn && !readOnly && (
+                                      <button onClick={() => set(`fdd_${n}_fn` as any, '')} className="btn-ghost p-1.5 text-slate-400 hover:text-red-500" title="Eject">
+                                        <X className="w-3.5 h-3.5" />
+                                      </button>
+                                    )}
+                                  </div>
+                                </Field>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </FieldGroup>
 
-            {/* ── Other ─────────────────────────────────────────────── */}
-            {activeTab === 'other' && hw && (
-              <>
-                <FieldGroup label="ISA RTC">
-                  <Field label="ISA RTC Card">
-                    <Select value={cfg.isartc_type} onChange={v => set('isartc_type', v)} options={[{id:'none',name:'None'},...compatIsartcTypes.filter(c=>c.id!=='none')]} grouped />
-                    <DeviceSettings
-                      device={hw?.isartc_types.find(c => c.id === cfg.isartc_type)}
-                      settings={devSettings(cfg.isartc_type)}
-                      onChange={(k, v) => setDeviceSettings(cfg.isartc_type, k, v)}
-                    />
-                  </Field>
-                </FieldGroup>
-                <FieldGroup label="ISA Memory Expansion">
-                  {([1, 2] as const).map(slot => (
-                    <div key={slot} className="p-3 rounded-lg border border-slate-200 dark:border-slate-700 space-y-3">
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Slot {slot}</span>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-xs text-slate-500 mb-1 block">Base Address (hex)</label>
-                          <input type="number" min={0} step={16384} className="input text-xs"
-                            value={cfg[`isamem_${slot}_base` as keyof VMConfig] as number}
-                            onChange={e => set(`isamem_${slot}_base` as any, parseInt(e.target.value) || 0)} />
-                        </div>
-                        <div>
-                          <label className="text-xs text-slate-500 mb-1 block">Size (KB)</label>
-                          <select className="input text-xs"
-                            value={cfg[`isamem_${slot}_size` as keyof VMConfig] as number}
-                            onChange={e => set(`isamem_${slot}_size` as any, parseInt(e.target.value))}>
-                            <option value={0}>Disabled</option>
-                            <option value={64}>64 KB</option>
-                            <option value={128}>128 KB</option>
-                            <option value={256}>256 KB</option>
-                            <option value={512}>512 KB</option>
-                            <option value={1024}>1 MB</option>
+                      {vmId && (
+                        <FieldGroup label="Media Files">
+                          <div className="space-y-2">
+                            {mediaFiles.filter(f => /\.(img|ima|vfd|flp)$/i.test(f.name)).map(f => (
+                              <div key={f.name} className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                                <span className="font-mono text-slate-700 dark:text-slate-300 truncate flex-1">{f.name}</span>
+                                <span className="text-xs text-slate-400 ml-3 flex-shrink-0">{formatBytes(f.size)}</span>
+                                <button onClick={() => handleMediaDelete(f.name)} className="ml-2 p-1 text-red-400 hover:text-red-600 flex-shrink-0">
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            ))}
+                            {mediaFiles.filter(f => /\.(img|ima|vfd|flp)$/i.test(f.name)).length === 0 && (
+                              <p className="text-xs text-slate-400 italic">No floppy images uploaded.</p>
+                            )}
+                            <div className="pt-1 space-y-2">
+                              <input ref={fileInputRef} type="file" className="hidden"
+                                accept=".001,.002,.003,.004,.005,.006,.007,.008,.009,.010,.12,.144,.360,.720,.86f,.bin,.cq,.cqm,.ddi,.dsk,.fdi,.fdf,.flp,.hdm,.ima,.imd,.img,.json,.mfm,.td0,.vfd,.xdf"
+                                onChange={handleMediaUpload} />
+                              <div className="flex items-center gap-3">
+                                <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="btn-secondary text-xs">
+                                  <Upload className="w-3.5 h-3.5" />
+                                  {uploading ? 'Uploading…' : 'Upload Floppy Image'}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </FieldGroup>
+                      )}
+                    </>
+                  )}
+
+                  {/* ── CD-ROM Drives ────────────────────────────────────────── */}
+                  {activeTab === 'cdrom' && hw && (
+                    <>
+                      <FieldGroup label="Drives">
+                        {([1, 2, 3, 4] as const).map(i => {
+                          const n = `0${i}` as '01' | '02' | '03' | '04'
+                          const enabled = cfg[`cdrom_${n}_enabled` as keyof VMConfig] as boolean
+                          const speed = cfg[`cdrom_${n}_speed` as keyof VMConfig] as number
+                          const driveType = cfg[`cdrom_${n}_drive_type` as keyof VMConfig] as string
+                          const fn = cfg[`cdrom_${n}_fn` as keyof VMConfig] as string
+                          const ideCh = cfg[`cdrom_${n}_ide_channel` as keyof VMConfig] as string
+                          const freeChannels = availableIdeChannels.filter(ch => !channelMap[ch] || channelMap[ch] === `CD-ROM ${i}`)
+                          const prevCdN = i > 1 ? `0${i - 1}` : null
+                          const prevCdEnabled = prevCdN ? (cfg[`cdrom_${prevCdN}_enabled` as keyof VMConfig] as boolean) : true
+                          return (
+                            <div key={i} className="p-4 rounded-lg border border-slate-200 dark:border-slate-700 space-y-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">CD-ROM Drive {i}</span>
+                                <Toggle
+                                  disabled={readOnly || !prevCdEnabled}
+                                  value={enabled}
+                                  onChange={v => {
+                                    set(`cdrom_${n}_enabled` as any, v)
+                                    // If disabling, also disable subsequent drives
+                                    if (!v) {
+                                      for (let j = i + 1; j <= 4; j++) {
+                                        const jn = `0${j}`
+                                        set(`cdrom_${jn}_enabled` as any, false)
+                                        set(`cdrom_${jn}_fn` as any, '')
+                                      }
+                                    }
+                                  }}
+                                  label="Enable"
+                                />
+                              </div>
+                              {enabled && (
+                                <>
+                                  <Field label="Drive Model" hint="Emulated drive identity reported to the OS">
+                                    <select className="input text-xs" disabled={readOnly} value={driveType} onChange={e => {
+                                      const sel = hw?.cdrom_drive_types.find(d => d.id === e.target.value)
+                                      set(`cdrom_${n}_drive_type` as any, e.target.value)
+                                      if (sel && sel.id) {
+                                        // Auto-set speed from the drive's rated speed if it embeds "(Nx)" in the name
+                                        const m = sel.name.match(/\((\d+)x\)/)
+                                        if (m) set(`cdrom_${n}_speed` as any, parseInt(m[1]))
+                                      }
+                                    }}>
+                                      <option value="">— 86Box default —</option>
+                                      {hw?.cdrom_drive_types.map(d => (
+                                        <option key={d.id} value={d.id}>{d.name}</option>
+                                      ))}
+                                    </select>
+                                  </Field>
+                                  <Field label="IDE Channel" hint="Avoid conflicts with HDDs">
+                                    {freeChannels.length === 0 ? (
+                                      <p className="text-xs text-red-500">No free IDE channels — enable more via Controllers tab or remove another drive.</p>
+                                    ) : (
+                                      <select className="input" disabled={readOnly} value={freeChannels.includes(ideCh) ? ideCh : freeChannels[0]} onChange={e => set(`cdrom_${n}_ide_channel` as any, e.target.value)}>
+                                        {freeChannels.map(ch => (
+                                          <option key={ch} value={ch}>{IDE_CHANNEL_LABELS[ch]} ({ch})</option>
+                                        ))}
+                                      </select>
+                                    )}
+                                  </Field>
+                                  <Field label="Speed" hint="Override rated speed (ignored when a specific drive model is selected)">
+                                    <div className="flex items-center gap-3">
+                                      <input type="range" min={1} max={72} value={speed} onChange={e => set(`cdrom_${n}_speed` as any, parseInt(e.target.value))} className="flex-1 accent-blue-600" />
+                                      <span className="text-sm text-slate-700 dark:text-slate-300 w-12 text-right tabular-nums">{speed}×</span>
+                                    </div>
+                                  </Field>
+                                  {vmId && (
+                                    <Field label="ISO Image" hint="CD/DVD image to mount at startup">
+                                      <div className="flex items-center gap-2">
+                                        <button
+                                          onClick={() => !readOnly && setImagePicker({ key: `cdrom_${n}_fn`, kind: 'cdrom' })}
+                                          disabled={readOnly}
+                                          className="btn-secondary text-xs flex-1 justify-start font-mono truncate"
+                                          title={fn || 'No image selected'}
+                                        >
+                                          <FolderOpen className="w-3.5 h-3.5 shrink-0" />
+                                          <span className="truncate">{fn ? fn.split('/').pop() : '— No image —'}</span>
+                                        </button>
+                                        {fn && !readOnly && (
+                                          <button onClick={() => set(`cdrom_${n}_fn` as any, '')} className="btn-ghost p-1.5 text-slate-400 hover:text-red-500" title="Eject">
+                                            <X className="w-3.5 h-3.5" />
+                                          </button>
+                                        )}
+                                      </div>
+                                    </Field>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </FieldGroup>
+
+                      {vmId && (
+                        <FieldGroup label="ISO / Disc Images">
+                          <div className="space-y-2">
+                            {mediaFiles.filter(f => /\.(iso|bin|cue)$/i.test(f.name)).map(f => (
+                              <div key={f.name} className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                                <span className="font-mono text-slate-700 dark:text-slate-300 truncate flex-1">{f.name}</span>
+                                <span className="text-xs text-slate-400 ml-3 flex-shrink-0">{formatBytes(f.size)}</span>
+                                <button onClick={() => handleMediaDelete(f.name)} className="ml-2 p-1 text-red-400 hover:text-red-600 flex-shrink-0">
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            ))}
+                            {mediaFiles.filter(f => /\.(iso|bin|cue)$/i.test(f.name)).length === 0 && (
+                              <p className="text-xs text-slate-400 italic">No ISO images uploaded.</p>
+                            )}
+                            <div className="pt-1 space-y-2">
+                              <input ref={fileInputRef} type="file" className="hidden"
+                                accept=".iso,.bin,.img,.cue,.mds,.mdx,.viso"
+                                onChange={handleMediaUpload} />
+                              <div className="flex items-center gap-3">
+                                <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="btn-secondary text-xs">
+                                  <Upload className="w-3.5 h-3.5" />
+                                  {uploading ? 'Uploading…' : 'Upload ISO Image'}
+                                </button>
+                                {uploading && uploadProgress !== null && (
+                                  <div className="flex items-center gap-1.5 text-slate-400">
+                                    <div className="w-24 h-1.5 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
+                                      <div className="h-full bg-blue-500 rounded-full transition-all duration-150" style={{ width: `${uploadProgress}%` }} />
+                                    </div>
+                                    <span className="text-xs tabular-nums">{uploadProgress}%</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </FieldGroup>
+                      )}
+                    </>
+                  )}
+
+                  {/* ── Ports & Input ────────────────────────────────────────── */}
+                  {activeTab === 'ports' && hw && (
+                    <>
+                      <FieldGroup label="Mouse">
+                        <Field label="Mouse Type">
+                          <Select value={cfg.mouse_type} onChange={v => set('mouse_type', v)} options={hw.mouse_types} />
+                        </Field>
+                      </FieldGroup>
+                      <FieldGroup label="Joystick">
+                        <Field label="Joystick">
+                          <Select value={cfg.joystick_type} onChange={v => set('joystick_type', v)} options={hw.joystick_types} />
+                        </Field>
+                      </FieldGroup>
+                      <FieldGroup label="Keyboard">
+                        <Field label="Keyboard Type">
+                          <select className="input" value={cfg.keyboard_type} onChange={e => set('keyboard_type', e.target.value)}>
+                            <option value="keyboard_pc_xt">PC/XT Keyboard</option>
+                            <option value="keyboard_at">AT Keyboard</option>
+                            <option value="keyboard_mf2">MF2 (101/102 key)</option>
+                            <option value="keyboard_mf2_jp">MF2 Japanese</option>
+                            <option value="keyboard_ps2">PS/2 Keyboard</option>
                           </select>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </FieldGroup>
-                <FieldGroup label="VNC">
-                  <Field label="VNC Password" hint="Leave blank for no password">
-                    <input
-                      type="password"
-                      className="input"
-                      value={cfg.vnc_password}
-                      onChange={e => set('vnc_password', e.target.value)}
-                      placeholder="Optional VNC password"
-                      autoComplete="new-password"
-                    />
-                  </Field>
-                </FieldGroup>
-              </>
-            )}
-          </div>
-          </DisabledCtx.Provider>
-          </fieldset>
-        </div>
+                        </Field>
+                      </FieldGroup>
+                      <FieldGroup label="COM Ports">
+                        {([1, 2, 3, 4] as const).map(i => (
+                          <Field key={i} label={`COM${i}`}>
+                            <Toggle
+                              value={cfg[`com_${i}_enabled` as keyof VMConfig] as boolean}
+                              onChange={v => set(`com_${i}_enabled` as any, v)}
+                              label="Enable"
+                            />
+                          </Field>
+                        ))}
+                      </FieldGroup>
+                      <FieldGroup label="LPT Ports">
+                        {([1, 2, 3] as const).map(i => (
+                          <Field key={i} label={`LPT${i}`}>
+                            <Toggle
+                              value={cfg[`lpt_${i}_enabled` as keyof VMConfig] as boolean}
+                              onChange={v => set(`lpt_${i}_enabled` as any, v)}
+                              label="Enable"
+                            />
+                          </Field>
+                        ))}
+                      </FieldGroup>
+                    </>
+                  )}
 
-        {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex-shrink-0">
-          {!serverOnline
-            ? <p className="text-xs text-red-500 dark:text-red-400 flex items-center gap-1.5"><CloudOff className="w-3.5 h-3.5" />Server unreachable — settings are read-only</p>
-            : readOnly
-              ? <p className="text-xs text-amber-600 dark:text-amber-400">Settings are read-only while the VM is running</p>
-              : error && <p className="text-sm text-red-500 dark:text-red-400">{error}</p>
-          }
-          <div className="flex items-center gap-3 ml-auto">
-            {readOnly || !serverOnline ? (
-              <button onClick={handleClose} className="btn-primary">Close</button>
-            ) : (
-              <>
-                <button onClick={handleClose} className="btn-secondary">Cancel</button>
-                <button onClick={handleSave} disabled={saving} className="btn-primary">
-                  {saving ? 'Saving…' : 'Save'}
-                </button>
-              </>
-            )}
+                  {/* ── Other ─────────────────────────────────────────────── */}
+                  {activeTab === 'other' && hw && (
+                    <>
+                      <FieldGroup label="ISA RTC">
+                        <Field label="ISA RTC Card">
+                          <Select value={cfg.isartc_type} onChange={v => set('isartc_type', v)} options={[{ id: 'none', name: 'None' }, ...compatIsartcTypes.filter(c => c.id !== 'none')]} grouped />
+                          <DeviceSettings
+                            device={hw?.isartc_types.find(c => c.id === cfg.isartc_type)}
+                            settings={devSettings(cfg.isartc_type)}
+                            onChange={(k, v) => setDeviceSettings(cfg.isartc_type, k, v)}
+                          />
+                        </Field>
+                      </FieldGroup>
+                      <FieldGroup label="ISA Memory Expansion">
+                        {([1, 2] as const).map(slot => (
+                          <div key={slot} className="p-3 rounded-lg border border-slate-200 dark:border-slate-700 space-y-3">
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Slot {slot}</span>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-xs text-slate-500 mb-1 block">Base Address (hex)</label>
+                                <input type="number" min={0} step={16384} className="input text-xs"
+                                  value={cfg[`isamem_${slot}_base` as keyof VMConfig] as number}
+                                  onChange={e => set(`isamem_${slot}_base` as any, parseInt(e.target.value) || 0)} />
+                              </div>
+                              <div>
+                                <label className="text-xs text-slate-500 mb-1 block">Size (KB)</label>
+                                <select className="input text-xs"
+                                  value={cfg[`isamem_${slot}_size` as keyof VMConfig] as number}
+                                  onChange={e => set(`isamem_${slot}_size` as any, parseInt(e.target.value))}>
+                                  <option value={0}>Disabled</option>
+                                  <option value={64}>64 KB</option>
+                                  <option value={128}>128 KB</option>
+                                  <option value={256}>256 KB</option>
+                                  <option value={512}>512 KB</option>
+                                  <option value={1024}>1 MB</option>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </FieldGroup>
+                      <FieldGroup label="VNC">
+                        <Field label="VNC Password" hint="Leave blank for no password">
+                          <input
+                            type="password"
+                            className="input"
+                            value={cfg.vnc_password}
+                            onChange={e => set('vnc_password', e.target.value)}
+                            placeholder="Optional VNC password"
+                            autoComplete="new-password"
+                          />
+                        </Field>
+                      </FieldGroup>
+                    </>
+                  )}
+                </div>
+              </DisabledCtx.Provider>
+            </fieldset>
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex-shrink-0">
+            {!serverOnline
+              ? <p className="text-xs text-red-500 dark:text-red-400 flex items-center gap-1.5"><CloudOff className="w-3.5 h-3.5" />Server unreachable — settings are read-only</p>
+              : readOnly
+                ? <p className="text-xs text-amber-600 dark:text-amber-400">Settings are read-only while the VM is running</p>
+                : error && <p className="text-sm text-red-500 dark:text-red-400">{error}</p>
+            }
+            <div className="flex items-center gap-3 ml-auto">
+              {readOnly || !serverOnline ? (
+                <button onClick={handleClose} className="btn-primary">Close</button>
+              ) : (
+                <>
+                  <button onClick={handleClose} className="btn-secondary">Cancel</button>
+                  <button onClick={handleSave} disabled={saving} className="btn-primary">
+                    {saving ? 'Saving…' : 'Save'}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
       </div>{/* end positioning wrapper */}
 

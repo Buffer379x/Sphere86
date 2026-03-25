@@ -105,36 +105,36 @@ function UserModal({ initial, onSave, onClose }: {
             </label>
           </div>
         </div>
-          <div className="border-t border-slate-200 dark:border-slate-800 pt-4 mt-4">
-            <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-3">Permissions</h3>
-            <div className="space-y-3">
-              {[
-                { key: 'can_manage_vms', label: 'Create & Delete VMs', desc: 'Allow user to create, edit and delete Virtual Machines.' },
-                { key: 'can_manage_groups', label: 'Manage Groups', desc: 'Allow user to create and edit VM folders/groups.' },
-                { key: 'can_access_library', label: 'Access Global Library', desc: 'Allow user to see the read-only ISO library.' },
-                { key: 'can_upload_images', label: 'Upload Images', desc: 'Allow user to upload custom ISOs and floppy images.' },
-              ].map(perm => (
-                <div key={perm.key} className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className={`text-sm font-medium text-slate-700 dark:text-slate-300 ${form.is_admin ? 'opacity-50' : ''}`}>{perm.label}</p>
-                    <p className={`text-xs text-slate-500 mt-0.5 ${form.is_admin ? 'opacity-50' : ''}`}>{perm.desc}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setForm(f => ({ ...f, [perm.key]: !(f as any)[perm.key] }))}
-                    disabled={form.is_admin}
-                    className={clsx(
-                      'flex-shrink-0 relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none',
-                      form.is_admin ? 'bg-blue-300 dark:bg-blue-900/50 cursor-not-allowed' : (form as any)[perm.key] ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600',
-                    )}
-                    title={form.is_admin ? 'Admins always have all permissions' : undefined}
-                  >
-                    <span className={clsx('inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform', (form.is_admin || (form as any)[perm.key]) ? 'translate-x-6' : 'translate-x-1')} />
-                  </button>
+        <div className="border-t border-slate-200 dark:border-slate-800 pt-4 mt-4">
+          <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-3">Permissions</h3>
+          <div className="space-y-3">
+            {[
+              { key: 'can_manage_vms', label: 'Create & Delete VMs', desc: 'Allow user to create, edit and delete Virtual Machines.' },
+              { key: 'can_manage_groups', label: 'Manage Groups', desc: 'Allow user to create and edit VM folders/groups.' },
+              { key: 'can_access_library', label: 'Access Global Library', desc: 'Allow user to see the read-only ISO library.' },
+              { key: 'can_upload_images', label: 'Upload Images', desc: 'Allow user to upload custom ISOs and floppy images.' },
+            ].map(perm => (
+              <div key={perm.key} className="flex items-start justify-between gap-3">
+                <div>
+                  <p className={`text-sm font-medium text-slate-700 dark:text-slate-300 ${form.is_admin ? 'opacity-50' : ''}`}>{perm.label}</p>
+                  <p className={`text-xs text-slate-500 mt-0.5 ${form.is_admin ? 'opacity-50' : ''}`}>{perm.desc}</p>
                 </div>
-              ))}
-            </div>
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, [perm.key]: !(f as any)[perm.key] }))}
+                  disabled={form.is_admin}
+                  className={clsx(
+                    'flex-shrink-0 relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none',
+                    form.is_admin ? 'bg-blue-300 dark:bg-blue-900/50 cursor-not-allowed' : (form as any)[perm.key] ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600',
+                  )}
+                  title={form.is_admin ? 'Admins always have all permissions' : undefined}
+                >
+                  <span className={clsx('inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform', (form.is_admin || (form as any)[perm.key]) ? 'translate-x-6' : 'translate-x-1')} />
+                </button>
+              </div>
+            ))}
           </div>
+        </div>
         {error && <p className="text-sm text-red-500 mt-3">{error}</p>}
         <div className="flex gap-3 mt-6 justify-end">
           <button onClick={onClose} className="btn-secondary">Cancel</button>
@@ -148,7 +148,7 @@ function UserModal({ initial, onSave, onClose }: {
   )
 }
 
-export default function UsersPage() {
+export default function UsersPage({ hideHeader }: { hideHeader?: boolean }) {
   const qc = useQueryClient()
   const { currentUser } = useStore()
   const [showCreate, setShowCreate] = useState(false)
@@ -174,16 +174,26 @@ export default function UsersPage() {
   })
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">User Management</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{users.length} {users.length === 1 ? 'user' : 'users'}</p>
+    <div className={hideHeader ? "space-y-6" : "p-6 max-w-7xl mx-auto space-y-6"}>
+      {!hideHeader && (
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">User Management</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{users.length} {users.length === 1 ? 'user' : 'users'}</p>
+          </div>
+          <button onClick={() => setShowCreate(true)} className="btn-primary">
+            <Plus className="w-4 h-4" /> Create User
+          </button>
         </div>
-        <button onClick={() => setShowCreate(true)} className="btn-primary">
-          <Plus className="w-4 h-4" /> Create User
-        </button>
-      </div>
+      )}
+
+      {hideHeader && (
+        <div className="flex justify-end mb-4">
+          <button onClick={() => setShowCreate(true)} className="btn-primary">
+            <Plus className="w-4 h-4" /> Create User
+          </button>
+        </div>
+      )}
 
       <div className="card overflow-hidden">
         <table className="w-full text-sm">

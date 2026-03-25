@@ -2,6 +2,8 @@ import configparser
 import logging
 import os
 import re
+import logging.handlers
+from pathlib import Path
 from contextlib import asynccontextmanager
 import asyncio
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
@@ -10,10 +12,28 @@ from pydantic import BaseModel
 
 from .config import get_settings
 from .vm_process import VMProcessManager
-from .updater import check_86box_update, check_roms_update, download_86box, download_roms
+from .updater import check_86box_update, check_roms_update, check_app_update, download_86box, download_roms
 
 settings = get_settings()
-logging.basicConfig(level=settings.log_level.upper())
+
+# Ensure log directory exists
+os.makedirs(settings.log_dir, exist_ok=True)
+
+# Configure logging
+log_format = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+handlers = [
+    logging.StreamHandler(),
+    logging.handlers.RotatingFileHandler(
+        Path(settings.log_dir) / "engine.log",
+        maxBytes=5 * 1024 * 1024,  # 5MB
+        backupCount=5
+    )
+]
+logging.basicConfig(
+    level=settings.log_level.upper(),
+    format=log_format,
+    handlers=handlers
+)
 log = logging.getLogger("Sphere86.runner")
 
 manager = VMProcessManager()
@@ -311,6 +331,7 @@ async def audio_stream(vm_id: int):
 async def get_version():
     box_info = await check_86box_update()
     roms_info = await check_roms_update()
+    app_info = await check_app_update()
     return {
         "version": box_info.get("version"),
         "latest": box_info.get("latest"),
@@ -318,6 +339,7 @@ async def get_version():
         "roms_version": roms_info.get("roms_version"),
         "roms_latest": roms_info.get("roms_latest"),
         "roms_update_available": roms_info.get("roms_update_available", False),
+        "app_latest": app_info.get("app_latest"),
         "vm_auto_shutdown_minutes": settings.vm_auto_shutdown_minutes,
     }
 

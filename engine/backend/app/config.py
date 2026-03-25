@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings
+from typing import Optional
 from functools import lru_cache
 import os
 import secrets as _secrets
@@ -39,12 +40,30 @@ class Settings(BaseSettings):
     # Runner
     runner_url: str = "http://runner:8001"
 
+    # 86Box
+    box86_version: str = ""
+    box86_arch: str = "x86_64"
+
+    # Networking
+    base_vnc_port: int = 5900
+    base_ws_port: int = 6900
+    max_concurrent_vms: int = 50
+    active_vm_limit: Optional[int] = 5
+
     # Quotas
+    enforce_quotas: bool = True
     default_max_vms: int = 10
     default_max_storage_gb: int = 100
 
+    # Maintenance
+    vm_auto_shutdown_minutes: int = 0
+
     # Logging
     log_level: str = "info"
+    log_dir: str = "/data/logs"
+
+    # Audio
+    audio_buffer_secs: float = 0.4
 
     # Data paths (inside container)
     data_path: str = "/data"

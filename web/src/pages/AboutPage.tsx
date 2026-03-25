@@ -2,19 +2,16 @@ import { ExternalLink } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { systemApi } from '../lib/api'
 
-export default function AboutPage() {
-  const { data: version } = useQuery({
-    queryKey: ['version'],
-    queryFn: systemApi.version,
-    staleTime: 60_000,
-  })
+export default function AboutPage({ hideHeader }: { hideHeader?: boolean }) {
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-xl font-bold text-slate-900 dark:text-white">About</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Sphere86 and the software it runs on</p>
-      </div>
+    <div className={hideHeader ? "space-y-6" : "p-6 max-w-7xl mx-auto space-y-6"}>
+      {!hideHeader && (
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">About</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Sphere86 and the software it runs on</p>
+        </div>
+      )}
 
       {/* Sphere86 */}
       <div className="card px-6 py-5 space-y-3">
@@ -22,9 +19,6 @@ export default function AboutPage() {
           <img src="/icon.png" alt="Sphere86" className="w-10 h-10 object-contain flex-shrink-0" />
           <div>
             <h2 className="font-semibold text-slate-900 dark:text-white">Sphere86</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Version {version?.app_version || '1.0.0'}
-            </p>
           </div>
         </div>
         <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -56,12 +50,6 @@ export default function AboutPage() {
           />
           <div>
             <h2 className="font-semibold text-slate-900 dark:text-white">86Box</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              {version?.box86_version ? `Installed: ${version.box86_version}` : 'Not installed'}
-              {version?.box86_latest && version.box86_version !== version.box86_latest
-                ? ` · Latest: ${version.box86_latest}`
-                : ''}
-            </p>
           </div>
         </div>
         <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">

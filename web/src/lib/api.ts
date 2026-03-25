@@ -1,4 +1,4 @@
-import { VM, VMConfig, VMGroup, User, SystemStats, UserStats, VersionInfo, HardwareLists, AuthConfig } from '../types'
+import { VM, VMConfig, VMGroup, User, SystemStats, UserStats, VersionInfo, HardwareLists, AuthConfig, AppSettings } from '../types'
 
 const BASE = '/api'
 
@@ -62,15 +62,15 @@ export const vmApi = {
 
   get: (id: number) => request<VM>(`/vms/${id}`),
 
-// NEW: Fetches the list of VM folders that exist in vms/ but are not yet registered in the database
-  getUnregistered: () => 
+  // NEW: Fetches the list of VM folders that exist in vms/ but are not yet registered in the database
+  getUnregistered: () =>
     request<{ unregistered: { folder_name: string; machine: string }[] }>('/vms/unregistered'),
-  
+
   // NEW: Sends the command to import one of these discovered folders as a new VM
-  importVM: (data: { folder_name: string; vm_name: string; description?: string; group_id: number | null }) => 
-    request<{ vm: VM }>('/vms/import', { 
-      method: 'POST', 
-      body: JSON.stringify(data) 
+  importVM: (data: { folder_name: string; vm_name: string; description?: string; group_id: number | null }) =>
+    request<{ vm: VM }>('/vms/import', {
+      method: 'POST',
+      body: JSON.stringify(data)
     }),
 
   create: (data: { name: string; description?: string; group_id?: number; config: VMConfig; shared_with_user_ids?: number[] }) =>
@@ -132,13 +132,13 @@ export const systemApi = {
   triggerUpdate: () => request<Record<string, string>>('/system/update-86box', { method: 'POST' }),
   hardware: () => request<HardwareLists>('/system/hardware'),
   machineCpuMap: () => request<Record<string, string>>('/system/hardware/machine-cpu-map'),
-voodooTypes: () => request<{ id: string; name: string }[]>('/system/hardware/voodoo-types'),
+  voodooTypes: () => request<{ id: string; name: string }[]>('/system/hardware/voodoo-types'),
   refreshHardware: () => request<{ status: string; machines: number }>('/system/hardware/refresh', { method: 'POST' }),
   allUsersStats: () => request<{ id: number; username: string; vm_count: number; running_vms: number; disk_usage_bytes: number; max_vms: number; max_storage_gb: number }[]>('/system/all-users-stats'),
   recommendedVmLimit: () => request<{ recommended: number; current_limit: number; cpu_cores: number; ram_gb: number; notes: string }>('/system/recommended-vm-limit'),
   config: () => request<Record<string, Record<string, string>>>('/system/config'),
-  getAppSettings: () => request<{ enforce_quotas: boolean; active_vm_limit: number | null }>('/system/app-settings'),
-  updateAppSettings: (s: { enforce_quotas: boolean; active_vm_limit: number | null }) => request<{ enforce_quotas: boolean; active_vm_limit: number | null }>('/system/app-settings', { method: 'PUT', body: JSON.stringify(s) }),
+  getAppSettings: () => request<AppSettings>('/system/app-settings'),
+  updateAppSettings: (s: Partial<AppSettings>) => request<AppSettings>('/system/app-settings', { method: 'PUT', body: JSON.stringify(s) }),
 }
 
 // ─── Shared media pool ────────────────────────────────────────────────────────
@@ -313,24 +313,24 @@ export function defaultConfig(): VMConfig {
     ide_qua_enabled: false,
     scsi_card: 'none',
     fdc_card: 'none',
-    hdd_01_enabled: false, hdd_01_bus: 'ide',  hdd_01_size_mb: 512, hdd_01_cylinders: null, hdd_01_heads: null, hdd_01_spt: null, hdd_01_speed: '1997_5400rpm', hdd_01_ide_channel: '0:0',
-    hdd_02_enabled: false, hdd_02_bus: 'ide',  hdd_02_size_mb: 512, hdd_02_cylinders: null, hdd_02_heads: null, hdd_02_spt: null, hdd_02_speed: '1997_5400rpm', hdd_02_ide_channel: '0:1',
+    hdd_01_enabled: false, hdd_01_bus: 'ide', hdd_01_size_mb: 512, hdd_01_cylinders: null, hdd_01_heads: null, hdd_01_spt: null, hdd_01_speed: '1997_5400rpm', hdd_01_ide_channel: '0:0',
+    hdd_02_enabled: false, hdd_02_bus: 'ide', hdd_02_size_mb: 512, hdd_02_cylinders: null, hdd_02_heads: null, hdd_02_spt: null, hdd_02_speed: '1997_5400rpm', hdd_02_ide_channel: '0:1',
     hdd_03_enabled: false, hdd_03_bus: 'scsi', hdd_03_size_mb: 512, hdd_03_cylinders: null, hdd_03_heads: null, hdd_03_spt: null, hdd_03_speed: '1997_5400rpm', hdd_03_ide_channel: '1:0',
     hdd_04_enabled: false, hdd_04_bus: 'scsi', hdd_04_size_mb: 512, hdd_04_cylinders: null, hdd_04_heads: null, hdd_04_spt: null, hdd_04_speed: '1997_5400rpm', hdd_04_ide_channel: '1:1',
-    hdd_05_enabled: false, hdd_05_bus: 'ide',  hdd_05_size_mb: 512, hdd_05_cylinders: null, hdd_05_heads: null, hdd_05_spt: null, hdd_05_speed: '1997_5400rpm', hdd_05_ide_channel: '2:0',
-    hdd_06_enabled: false, hdd_06_bus: 'ide',  hdd_06_size_mb: 512, hdd_06_cylinders: null, hdd_06_heads: null, hdd_06_spt: null, hdd_06_speed: '1997_5400rpm', hdd_06_ide_channel: '2:1',
-    hdd_07_enabled: false, hdd_07_bus: 'ide',  hdd_07_size_mb: 512, hdd_07_cylinders: null, hdd_07_heads: null, hdd_07_spt: null, hdd_07_speed: '1997_5400rpm', hdd_07_ide_channel: '3:0',
-    hdd_08_enabled: false, hdd_08_bus: 'ide',  hdd_08_size_mb: 512, hdd_08_cylinders: null, hdd_08_heads: null, hdd_08_spt: null, hdd_08_speed: '1997_5400rpm', hdd_08_ide_channel: '3:1',
+    hdd_05_enabled: false, hdd_05_bus: 'ide', hdd_05_size_mb: 512, hdd_05_cylinders: null, hdd_05_heads: null, hdd_05_spt: null, hdd_05_speed: '1997_5400rpm', hdd_05_ide_channel: '2:0',
+    hdd_06_enabled: false, hdd_06_bus: 'ide', hdd_06_size_mb: 512, hdd_06_cylinders: null, hdd_06_heads: null, hdd_06_spt: null, hdd_06_speed: '1997_5400rpm', hdd_06_ide_channel: '2:1',
+    hdd_07_enabled: false, hdd_07_bus: 'ide', hdd_07_size_mb: 512, hdd_07_cylinders: null, hdd_07_heads: null, hdd_07_spt: null, hdd_07_speed: '1997_5400rpm', hdd_07_ide_channel: '3:0',
+    hdd_08_enabled: false, hdd_08_bus: 'ide', hdd_08_size_mb: 512, hdd_08_cylinders: null, hdd_08_heads: null, hdd_08_spt: null, hdd_08_speed: '1997_5400rpm', hdd_08_ide_channel: '3:1',
     fdd_01_type: '525_2dd', fdd_01_turbo: false, fdd_01_check_bpb: true, fdd_01_fn: '',
-    fdd_02_type: 'none',    fdd_02_turbo: false, fdd_02_check_bpb: true, fdd_02_fn: '',
-    fdd_03_type: 'none',    fdd_03_turbo: false, fdd_03_check_bpb: true, fdd_03_fn: '',
-    fdd_04_type: 'none',    fdd_04_turbo: false, fdd_04_check_bpb: true, fdd_04_fn: '',
+    fdd_02_type: 'none', fdd_02_turbo: false, fdd_02_check_bpb: true, fdd_02_fn: '',
+    fdd_03_type: 'none', fdd_03_turbo: false, fdd_03_check_bpb: true, fdd_03_fn: '',
+    fdd_04_type: 'none', fdd_04_turbo: false, fdd_04_check_bpb: true, fdd_04_fn: '',
     cdrom_01_enabled: false, cdrom_01_bus: 'ide', cdrom_01_ide_channel: '1:0', cdrom_01_speed: 24, cdrom_01_drive_type: '', cdrom_01_fn: '',
     cdrom_02_enabled: false, cdrom_02_bus: 'ide', cdrom_02_ide_channel: '1:1', cdrom_02_speed: 24, cdrom_02_drive_type: '', cdrom_02_fn: '',
     cdrom_03_enabled: false, cdrom_03_bus: 'ide', cdrom_03_ide_channel: '2:0', cdrom_03_speed: 24, cdrom_03_drive_type: '', cdrom_03_fn: '',
     cdrom_04_enabled: false, cdrom_04_bus: 'ide', cdrom_04_ide_channel: '2:1', cdrom_04_speed: 24, cdrom_04_drive_type: '', cdrom_04_fn: '',
-    com_1_enabled: true,  com_2_enabled: true,  com_3_enabled: false, com_4_enabled: false,
-    lpt_1_enabled: true,  lpt_2_enabled: false, lpt_3_enabled: false,
+    com_1_enabled: true, com_2_enabled: true, com_3_enabled: false, com_4_enabled: false,
+    lpt_1_enabled: true, lpt_2_enabled: false, lpt_3_enabled: false,
     mouse_type: 'ps2',
     joystick_type: 'none',
     keyboard_type: 'keyboard_at',

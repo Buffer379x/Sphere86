@@ -247,6 +247,41 @@ export interface SystemStats {
   hostname: string
 }
 
+export interface AppSettings {
+  // Authentication
+  user_management: boolean
+  ldap_enabled: boolean
+  ldap_server: string
+  ldap_port: number
+  ldap_base_dn: string
+  ldap_bind_dn: string
+  ldap_bind_password?: string
+  ldap_user_filter: string
+  ldap_group_dn: string
+  ldap_username_attr: string
+  ldap_email_attr: string
+  ldap_tls: boolean
+
+  // 86Box
+  box86_version: string
+  box86_arch: string
+
+  // System Limits
+  enforce_quotas: boolean
+  active_vm_limit: number | null
+  max_concurrent_vms: number
+  base_vnc_port: number
+  base_ws_port: number
+
+  // Defaults
+  default_max_vms: number
+  default_max_storage_gb: number
+
+  // Maintenance & Logging
+  vm_auto_shutdown_minutes: number
+  log_level: string
+  audio_buffer_secs: number
+}
 export interface UserStats {
   vm_count: number
   running_vm_count: number
@@ -261,6 +296,7 @@ export interface VersionInfo {
   roms_version?: string
   roms_latest?: string
   app_version: string
+  app_latest?: string
   update_available: boolean
   roms_update_available: boolean
   vm_auto_shutdown_minutes?: number
@@ -336,4 +372,5 @@ export interface VMTab {
   vmName: string
   status: string
   group_color?: string
+  groupName?: string
 }

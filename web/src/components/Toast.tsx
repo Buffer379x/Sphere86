@@ -21,7 +21,7 @@ function ToastItem({ toast }: { toast: Toast }) {
       onClick={toast.onClick ? () => { toast.onClick!(); removeToast(toast.id) } : undefined}
     >
       {icons[toast.type]}
-      <span className="flex-1">{toast.message}</span>
+      <span className="flex-1 whitespace-pre-wrap">{toast.message}</span>
       <button
         onClick={e => { e.stopPropagation(); removeToast(toast.id) }}
         className="opacity-50 hover:opacity-100 p-0.5"

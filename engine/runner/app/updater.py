@@ -20,6 +20,7 @@ settings = get_settings()
 GITHUB_API = "https://api.github.com"
 BOX86_REPO = "86Box/86Box"
 ROMS_REPO = "86Box/roms"
+SPHERE86_REPO = "Buffer379x/Sphere86"
 
 
 def _version_file(name: str) -> str:
@@ -40,12 +41,58 @@ def _write_version(name: str, version: str):
         f.write(version)
 
 
+_latest_release_cache = {}  # repo -> [timestamp, data]
+_CACHE_FILE = os.path.join(settings.data_path, "cache", "github_releases.json")
+CACHE_TTL = 43200  # 12 hours
+
+
+def _load_cache():
+    global _latest_release_cache
+    if not os.path.exists(_CACHE_FILE):
+        return
+    try:
+        with open(_CACHE_FILE, "r") as f:
+            _latest_release_cache = json.load(f)
+    except Exception as e:
+        log.warning("Could not load GitHub release cache: %s", e)
+
+
+def _save_cache():
+    try:
+        os.makedirs(os.path.dirname(_CACHE_FILE), exist_ok=True)
+        with open(_CACHE_FILE, "w") as f:
+            json.dump(_latest_release_cache, f)
+    except Exception as e:
+        log.warning("Could not save GitHub release cache: %s", e)
+
+
 async def get_latest_release(repo: str) -> dict:
+    import time
+    if not _latest_release_cache:
+        _load_cache()
+
+    now = time.time()
+    if repo in _latest_release_cache:
+        ts, data = _latest_release_cache[repo]
+        if now - ts < CACHE_TTL:
+            return data
+
     headers = {"Accept": "application/vnd.github.v3+json", "User-Agent": "Sphere86/1.0"}
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        r = await client.get(f"{GITHUB_API}/repos/{repo}/releases/latest", headers=headers)
-        r.raise_for_status()
-        return r.json()
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            r = await client.get(f"{GITHUB_API}/repos/{repo}/releases/latest", headers=headers)
+            r.raise_for_status()
+            data = r.json()
+            _latest_release_cache[repo] = [now, data]
+            _save_cache()
+            return data
+    except Exception as e:
+        # Graceful fallback: if rate limited or network error, use cached data even if expired
+        if repo in _latest_release_cache:
+            log.warning("GitHub API error for %s (%s). Using stale cache.", repo, e)
+            return _latest_release_cache[repo][1]
+        log.error("Could not fetch latest release for %s and no cache exists: %s", repo, e)
+        raise
 
 
 async def check_86box_update() -> dict:
@@ -84,6 +131,21 @@ async def check_roms_update() -> dict:
         return {"roms_version": installed or None, "roms_latest": None, "roms_update_available": False}
 
 
+async def check_app_update() -> dict:
+    try:
+        release = await get_latest_release(SPHERE86_REPO)
+        latest = release.get("tag_name", "")
+        # Remove leading 'v' if present for comparison
+        clean_latest = latest.lstrip('v')
+        return {
+            "app_latest": latest,
+            "app_latest_clean": clean_latest,
+        }
+    except Exception as e:
+        log.warning("Could not check Sphere86 updates: %s", e)
+        return {"app_latest": None}
+
+
 async def download_86box(release: dict = None) -> bool:
     """Download and install 86Box binary. Returns True on success."""
     try:
@@ -100,10 +162,10 @@ async def download_86box(release: dict = None) -> bool:
         arch_str = arch_map.get(arch, "x86_64")
 
         # Look for Linux binary
-        asset_url = None
-        asset_name = None
+        asset_url = ""
+        asset_name = ""
         for asset in release.get("assets", []):
-            name = asset["name"].lower()
+            name = asset.get("name", "").lower()
             if "linux" in name and arch_str.lower() in name and name.endswith(".tar.gz"):
                 asset_url = asset["browser_download_url"]
                 asset_name = asset["name"]
@@ -114,17 +176,17 @@ async def download_86box(release: dict = None) -> bool:
                 asset_name = asset["name"]
                 break
 
-        if not asset_url:
+        if not asset_url or not asset_name:
             log.error("No suitable 86Box binary found for Linux/%s in release %s", arch, tag)
             # Try to find any Linux asset
             for asset in release.get("assets", []):
-                if "linux" in asset["name"].lower():
+                if "linux" in asset.get("name", "").lower():
                     asset_url = asset["browser_download_url"]
                     asset_name = asset["name"]
                     log.warning("Falling back to: %s", asset_name)
                     break
 
-        if not asset_url:
+        if not asset_url or not asset_name:
             log.error("No Linux 86Box asset found at all.")
             return False
 

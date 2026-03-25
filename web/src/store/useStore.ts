@@ -21,6 +21,7 @@ interface AppStore {
 
   // Theme
   theme: 'light' | 'dark'
+  setTheme: (theme: 'light' | 'dark') => void
   toggleTheme: () => void
 
   // Open VM tabs (tabbed console)
@@ -29,7 +30,6 @@ interface AppStore {
   openVMTab: (tab: VMTab) => void
   closeVMTab: (vmId: number) => void
   setActiveTab: (tab: string) => void
-  reorderTabs: (fromId: number, toId: number) => void
   updateTabStatus: (vmId: number, status: string) => void
   updateTabGroupColor: (vmId: number, color: string | undefined) => void
 
@@ -73,14 +73,18 @@ export const useStore = create<AppStore>()(
       },
 
       theme: 'dark',
-      toggleTheme: () => {
-        const next = get().theme === 'dark' ? 'light' : 'dark'
+      setTheme: (next) => {
         set({ theme: next })
         if (next === 'dark') {
           document.documentElement.classList.add('dark')
         } else {
           document.documentElement.classList.remove('dark')
         }
+      },
+
+      toggleTheme: () => {
+        const next = get().theme === 'dark' ? 'light' : 'dark'
+        get().setTheme(next)
       },
 
       openTabs: [],
@@ -98,21 +102,13 @@ export const useStore = create<AppStore>()(
         const tabs = get().openTabs.filter(t => t.vmId !== vmId)
         set({
           openTabs: tabs,
-          activeTab: tabs.length > 0 ? `vm-${tabs[tabs.length - 1].vmUuid}` : 'dashboard',
+          activeTab: tabs.length > 0 ? `vm-${tabs[tabs.length - 1].vmUuid}` : 'vms',
         })
       },
 
       setActiveTab: (tab) => set({ activeTab: tab }),
 
-      reorderTabs: (fromId, toId) => {
-        const tabs = [...get().openTabs]
-        const from = tabs.findIndex(t => t.vmId === fromId)
-        const to   = tabs.findIndex(t => t.vmId === toId)
-        if (from === -1 || to === -1 || from === to) return
-        const [moved] = tabs.splice(from, 1)
-        tabs.splice(to, 0, moved)
-        set({ openTabs: tabs })
-      },
+
 
       updateTabStatus: (vmId, status) => {
         set(s => ({

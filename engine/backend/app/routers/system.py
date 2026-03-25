@@ -4,6 +4,7 @@ import time
 import os
 import socket
 from pathlib import Path
+from typing import Optional
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -11,6 +12,7 @@ from ..database import get_db
 from ..auth import get_current_user, require_admin
 from ..models import User, VM, SystemSetting
 from ..schemas import SystemStats, VersionInfo, UserStats, HardwareLists, HardwareOption, AppSettings
+from ..services.settings import DynamicSettings, get_db_bool, get_db_int
 from ..services.runner_client import RunnerClient
 from ..config import get_settings
 from ..utils import dir_size
@@ -96,6 +98,7 @@ async def get_version_info(
         roms_version=runner_info.get("roms_version"),
         roms_latest=runner_info.get("roms_latest"),
         app_version=APP_VERSION,
+        app_latest=runner_info.get("app_latest"),
         update_available=runner_info.get("update_available", False),
         roms_update_available=runner_info.get("roms_update_available", False),
         vm_auto_shutdown_minutes=runner_info.get("vm_auto_shutdown_minutes", 0),
@@ -332,11 +335,35 @@ async def get_app_settings(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin),
 ):
-    raw_limit = _get_setting(db, "active_vm_limit", "")
-    active_vm_limit = int(raw_limit) if raw_limit.isdigit() else None
+    ds = DynamicSettings(db)
+    s = ds.env
+    bind_pass = ds.ldap_bind_password
+
     return AppSettings(
-        enforce_quotas=_get_setting(db, "enforce_quotas", "true").lower() != "false",
-        active_vm_limit=active_vm_limit,
+        user_management=ds.user_management,
+        ldap_enabled=ds.ldap_enabled,
+        ldap_server=ds.ldap_server,
+        ldap_port=ds.ldap_port,
+        ldap_base_dn=ds.ldap_base_dn,
+        ldap_bind_dn=ds.ldap_bind_dn,
+        ldap_bind_password="***" if bind_pass else "",
+        ldap_user_filter=ds.ldap_user_filter,
+        ldap_group_dn=ds.ldap_group_dn,
+        ldap_username_attr=ds.ldap_username_attr,
+        ldap_email_attr=ds.ldap_email_attr,
+        ldap_tls=ds.ldap_tls,
+        box86_version=ds.box86_version,
+        box86_arch=ds.box86_arch,
+        enforce_quotas=ds.enforce_quotas,
+        active_vm_limit=ds.active_vm_limit,
+        max_concurrent_vms=ds.max_concurrent_vms,
+        base_vnc_port=ds.base_vnc_port,
+        base_ws_port=ds.base_ws_port,
+        default_max_vms=ds.default_max_vms,
+        default_max_storage_gb=ds.default_max_storage_gb,
+        vm_auto_shutdown_minutes=ds.vm_auto_shutdown_minutes,
+        log_level=ds.log_level,
+        audio_buffer_secs=ds.audio_buffer_secs,
     )
 
 
@@ -346,16 +373,24 @@ async def update_app_settings(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin),
 ):
-    _set_setting(db, "enforce_quotas", "true" if body.enforce_quotas else "false")
-    if body.active_vm_limit is not None:
-        _set_setting(db, "active_vm_limit", str(body.active_vm_limit))
-    else:
-        # Clear stored limit — runner default will be used
-        row = db.query(SystemSetting).filter(SystemSetting.key == "active_vm_limit").first()
-        if row:
-            db.delete(row)
-            db.commit()
-    return body
+    # Gather fields to save, excluding masked password if unchanged
+    data = body.model_dump()
+    if data.get("ldap_bind_password") == "***":
+        del data["ldap_bind_password"]
+
+    for key, value in data.items():
+        if value is None:
+            if key == "active_vm_limit":
+                row = db.query(SystemSetting).filter(SystemSetting.key == key).first()
+                if row:
+                    db.delete(row)
+            else:
+                _set_setting(db, key, "")
+        else:
+            _set_setting(db, key, str(value).lower() if isinstance(value, bool) else str(value))
+    
+    db.commit()
+    return await get_app_settings(db, current_user)
 
 
 @router.get("/recommended-vm-limit")

@@ -88,7 +88,7 @@ export default function ImportVMModal({ groups, onSuccess, onClose }: Props) {
   return createPortal(
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden">
-        
+
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/50">
           <div className="flex items-center gap-2">
@@ -122,9 +122,9 @@ export default function ImportVMModal({ groups, onSuccess, onClose }: Props) {
               {/* Folder Selection */}
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-slate-300">Select Folder to Import</label>
-                <select 
-                  className="input w-full" 
-                  value={selectedFolder} 
+                <select
+                  className="input w-full"
+                  value={selectedFolder}
                   onChange={e => handleFolderSelect(e.target.value)}
                   disabled={importing}
                 >
@@ -145,11 +145,11 @@ export default function ImportVMModal({ groups, onSuccess, onClose }: Props) {
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-slate-300">VM Name</label>
-                  <input 
-                    type="text" 
-                    className="input w-full" 
-                    value={vmName} 
-                    onChange={e => setVmName(e.target.value)} 
+                  <input
+                    type="text"
+                    className="input w-full"
+                    value={vmName}
+                    onChange={e => setVmName(e.target.value)}
                     placeholder="e.g. Windows 95"
                     disabled={importing}
                   />
@@ -157,11 +157,11 @@ export default function ImportVMModal({ groups, onSuccess, onClose }: Props) {
 
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-slate-300">Description (Optional)</label>
-                  <input 
-                    type="text" 
-                    className="input w-full" 
-                    value={description} 
-                    onChange={e => setDescription(e.target.value)} 
+                  <input
+                    type="text"
+                    className="input w-full"
+                    value={description}
+                    onChange={e => setDescription(e.target.value)}
                     placeholder="A brief description of this machine"
                     disabled={importing}
                   />
@@ -171,14 +171,14 @@ export default function ImportVMModal({ groups, onSuccess, onClose }: Props) {
                   <label className="text-sm font-medium text-slate-300">Group (Optional)</label>
                   <div className="flex items-center gap-2">
                     {groupId && (() => { const g = groups.find(g => g.id === groupId); return g ? <span className="w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: g.color }} /> : null })()}
-                    <select 
-                      className="input flex-1" 
-                      value={groupId ?? ''} 
+                    <select
+                      className="input flex-1"
+                      value={groupId ?? ''}
                       onChange={e => setGroupId(e.target.value ? parseInt(e.target.value) : null)}
                       disabled={importing}
                     >
                       <option value="">No group</option>
-                      {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+                      {groups.slice().sort((a, b) => a.name.localeCompare(b.name)).map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
                     </select>
                   </div>
                 </div>
@@ -198,9 +198,9 @@ export default function ImportVMModal({ groups, onSuccess, onClose }: Props) {
             <button onClick={onClose} disabled={importing} className="btn-secondary text-sm">
               Cancel
             </button>
-            <button 
-              onClick={handleImport} 
-              disabled={importing || folders.length === 0 || !selectedFolder} 
+            <button
+              onClick={handleImport}
+              disabled={importing || folders.length === 0 || !selectedFolder}
               className={clsx("btn-primary text-sm", importing && "opacity-75 cursor-not-allowed")}
             >
               {importing ? 'Importing...' : 'Import VM'}

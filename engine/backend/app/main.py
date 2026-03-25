@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import logging.handlers
 from contextlib import asynccontextmanager
 from pathlib import Path
 from fastapi import FastAPI
@@ -11,10 +12,28 @@ from .config import get_settings
 from .database import engine, Base, SessionLocal
 from .models import User, SystemSetting
 from .auth import hash_password
-from .routers import auth, vms, users, system, media, library
+from .routers import auth, vms, users, system, media, library, logs
 
 settings = get_settings()
-logging.basicConfig(level=settings.log_level.upper())
+
+# Ensure log directory exists
+os.makedirs(settings.log_dir, exist_ok=True)
+
+# Configure logging
+log_format = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+handlers = [
+    logging.StreamHandler(),
+    logging.handlers.RotatingFileHandler(
+        Path(settings.log_dir) / "panel.log",
+        maxBytes=5 * 1024 * 1024,  # 5MB
+        backupCount=5
+    )
+]
+logging.basicConfig(
+    level=settings.log_level.upper(),
+    format=log_format,
+    handlers=handlers
+)
 log = logging.getLogger("Sphere86")
 
 
@@ -126,7 +145,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Sphere86 API",
-    version="1.0.0",
+    version="1.4.0",
     lifespan=lifespan,
     docs_url="/api/docs",
     redoc_url="/api/redoc",
@@ -148,6 +167,7 @@ app.include_router(users.router)
 app.include_router(system.router)
 app.include_router(media.router)
 app.include_router(library.router)
+app.include_router(logs.router)
 
 
 @app.get("/api/health")

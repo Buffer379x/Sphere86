@@ -19,6 +19,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token", auto_error=False)
 
 
+from .services.settings import DynamicSettings
+
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
 
@@ -53,7 +55,7 @@ def authenticate_user(db: Session, username: str, password: str) -> Optional[mod
         return None
     if user.is_ldap:
         # Try LDAP authentication
-        if not ldap_authenticate(username, password):
+        if not ldap_authenticate(db, username, password):
             return None
         return user
     if not user.hashed_password or not verify_password(password, user.hashed_password):
@@ -61,22 +63,23 @@ def authenticate_user(db: Session, username: str, password: str) -> Optional[mod
     return user
 
 
-def ldap_authenticate(username: str, password: str) -> bool:
-    if not settings.ldap_enabled:
+def ldap_authenticate(db: Session, username: str, password: str) -> bool:
+    ds = DynamicSettings(db)
+    if not ds.ldap_enabled:
         return False
     try:
         from ldap3 import Server, Connection, ALL, SUBTREE, Tls
         import ssl
 
-        tls = Tls(validate=ssl.CERT_NONE) if settings.ldap_tls else None
-        server = Server(settings.ldap_server, port=settings.ldap_port, use_ssl=settings.ldap_tls, tls=tls, get_info=ALL)
+        tls = Tls(validate=ssl.CERT_NONE) if ds.ldap_tls else None
+        server = Server(ds.ldap_server, port=ds.ldap_port, use_ssl=ds.ldap_tls, tls=tls, get_info=ALL)
 
         # Bind with service account
-        conn = Connection(server, settings.ldap_bind_dn, settings.ldap_bind_password, auto_bind=True)
+        conn = Connection(server, ds.ldap_bind_dn, ds.ldap_bind_password, auto_bind=True)
 
         # Find user DN
-        user_filter = f"(&{settings.ldap_user_filter}({settings.ldap_username_attr}={username}))"
-        conn.search(settings.ldap_base_dn, user_filter, attributes=[settings.ldap_username_attr, settings.ldap_email_attr])
+        user_filter = f"(&{ds.ldap_user_filter}({ds.ldap_username_attr}={username}))"
+        conn.search(ds.ldap_base_dn, user_filter, attributes=[ds.ldap_username_attr, ds.ldap_email_attr])
         if not conn.entries:
             return False
         user_dn = conn.entries[0].entry_dn
@@ -87,9 +90,9 @@ def ldap_authenticate(username: str, password: str) -> bool:
             return False
 
         # Check group membership if configured
-        if settings.ldap_group_dn:
+        if ds.ldap_group_dn:
             conn.search(
-                settings.ldap_group_dn,
+                ds.ldap_group_dn,
                 f"(member={user_dn})",
                 search_scope=SUBTREE
             )
@@ -104,24 +107,25 @@ def ldap_authenticate(username: str, password: str) -> bool:
 
 def ldap_get_or_create_user(db: Session, username: str, password: str) -> Optional[models.User]:
     """For LDAP: authenticate and auto-create user if not exists."""
-    if not settings.ldap_enabled:
+    ds = DynamicSettings(db)
+    if not ds.ldap_enabled:
         return None
     try:
         from ldap3 import Server, Connection, ALL, SUBTREE, Tls
         import ssl
 
-        tls = Tls(validate=ssl.CERT_NONE) if settings.ldap_tls else None
-        server = Server(settings.ldap_server, port=settings.ldap_port, use_ssl=settings.ldap_tls, tls=tls, get_info=ALL)
-        conn = Connection(server, settings.ldap_bind_dn, settings.ldap_bind_password, auto_bind=True)
+        tls = Tls(validate=ssl.CERT_NONE) if ds.ldap_tls else None
+        server = Server(ds.ldap_server, port=ds.ldap_port, use_ssl=ds.ldap_tls, tls=tls, get_info=ALL)
+        conn = Connection(server, ds.ldap_bind_dn, ds.ldap_bind_password, auto_bind=True)
 
-        user_filter = f"(&{settings.ldap_user_filter}({settings.ldap_username_attr}={username}))"
-        conn.search(settings.ldap_base_dn, user_filter, attributes=[settings.ldap_username_attr, settings.ldap_email_attr])
+        user_filter = f"(&{ds.ldap_user_filter}({ds.ldap_username_attr}={username}))"
+        conn.search(ds.ldap_base_dn, user_filter, attributes=[ds.ldap_username_attr, ds.ldap_email_attr])
         if not conn.entries:
             return None
 
         entry = conn.entries[0]
         user_dn = entry.entry_dn
-        email = str(getattr(entry, settings.ldap_email_attr, username + "@ldap.local"))
+        email = str(getattr(entry, ds.ldap_email_attr, username + "@ldap.local"))
 
         # Bind as user to verify password
         user_conn = Connection(server, user_dn, password, auto_bind=True)
@@ -129,8 +133,8 @@ def ldap_get_or_create_user(db: Session, username: str, password: str) -> Option
             return None
 
         # Check group membership
-        if settings.ldap_group_dn:
-            conn.search(settings.ldap_group_dn, f"(member={user_dn})", search_scope=SUBTREE)
+        if ds.ldap_group_dn:
+            conn.search(ds.ldap_group_dn, f"(member={user_dn})", search_scope=SUBTREE)
             if not conn.entries:
                 return None  # Not in required group
 
@@ -142,8 +146,8 @@ def ldap_get_or_create_user(db: Session, username: str, password: str) -> Option
                 email=email,
                 is_admin=False,
                 is_ldap=True,
-                max_vms=settings.default_max_vms,
-                max_storage_gb=settings.default_max_storage_gb,
+                max_vms=ds.default_max_vms,
+                max_storage_gb=ds.default_max_storage_gb,
             )
             db.add(user)
             db.commit()
@@ -160,10 +164,9 @@ async def get_current_user(
     db: Session = Depends(get_db),
 ) -> Optional[models.User]:
     """Returns the current user. If user management is disabled, returns a synthetic admin."""
-    from .config import get_settings
-    settings = get_settings()
+    ds = DynamicSettings(db)
 
-    if not settings.user_management:
+    if not ds.user_management:
         user = db.query(models.User).filter(models.User.is_admin == True).first()
         if not user:
             raise HTTPException(

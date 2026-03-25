@@ -219,7 +219,7 @@ export default function LibraryPage() {
       <div className="flex-shrink-0 px-6 py-6 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">Media</h1>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">Media Manager</h1>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
               Browse the read-only library and manage your images
             </p>

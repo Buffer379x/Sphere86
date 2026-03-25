@@ -19,7 +19,7 @@ function StatusDot({ status }: { status: string }) {
   const { serverOnline } = useStore()
 
   const effective = serverOnline ? status : 'stopped'
-  
+
   const colorClass = {
     running: 'bg-emerald-500 dark:bg-emerald-400',
     paused: 'bg-amber-500 dark:bg-amber-400',
@@ -31,12 +31,12 @@ function StatusDot({ status }: { status: string }) {
   const isAnimated = effective === 'running' || effective === 'paused' || effective === 'starting'
 
   return (
-    <span 
+    <span
       className={clsx(
         colorClass,
         isAnimated && 'animate-pulse',
         'w-2 h-2 rounded-full inline-block flex-shrink-0'
-      )} 
+      )}
     />
   )
 }
@@ -97,8 +97,7 @@ function useConnectionStatus() {
 }
 
 export default function Layout() {
-  const { currentUser, logout, theme, toggleTheme, openTabs, activeTab, setActiveTab, closeVMTab, reorderTabs, authConfig, serverOnline } = useStore()
-  const dragSrc = useRef<number | null>(null)
+  const { currentUser, logout, theme, setTheme, toggleTheme, openTabs, activeTab, setActiveTab, closeVMTab, authConfig, serverOnline } = useStore()
 
   useHashRouting()
   useConnectionStatus()
@@ -112,11 +111,9 @@ export default function Layout() {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'vms', label: 'Virtual Machines', icon: Monitor },
-    ...(currentUser?.is_admin || currentUser?.can_access_library ? [{ id: 'media', label: 'Media', icon: Library }] : []),
+    ...(currentUser?.is_admin || currentUser?.can_access_library ? [{ id: 'media', label: 'Media Manager', icon: Library }] : []),
     { id: 'hardware', label: 'DB Explorer', icon: Cpu },
-    ...(currentUser?.is_admin && authConfig?.user_management ? [{ id: 'users', label: 'Users', icon: Users }] : []),
     { id: 'settings', label: 'Settings', icon: Settings },
-    { id: 'about', label: 'About', icon: Info },
   ]
 
 
@@ -125,24 +122,12 @@ export default function Layout() {
       {/* Sidebar */}
       <aside className="w-56 flex-shrink-0 flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
         {/* Logo */}
-        <div className="h-14 flex items-center px-4 border-b border-slate-200 dark:border-slate-800">
+        <div className="h-12 flex items-center px-4">
           <div className="flex items-center gap-2.5 flex-1 min-w-0">
             <img src="/icon.png" alt="Sphere86" className="w-7 h-7 flex-shrink-0 object-contain" />
             <div className="min-w-0">
               <span className="font-bold text-slate-900 dark:text-white text-base tracking-tight">Sphere86</span>
-              {version?.app_version && (
-                <span className="block text-[10px] text-slate-400 dark:text-slate-600 leading-none mt-0.5 tabular-nums">
-                  v{version.app_version}
-                </span>
-              )}
             </div>
-          </div>
-          {/* Connection indicator */}
-          <div title={serverOnline ? 'Server connected' : 'Server unreachable'}>
-            {serverOnline
-              ? <Server className="w-3.5 h-3.5 text-emerald-500" />
-              : <ServerOff className="w-3.5 h-3.5 text-red-400 animate-pulse" />
-            }
           </div>
         </div>
 
@@ -171,7 +156,12 @@ export default function Layout() {
                   Open Consoles
                 </span>
               </div>
-              {openTabs.map(tab => {
+              {[...openTabs].sort((a, b) => {
+                const gA = a.groupName || ''
+                const gB = b.groupName || ''
+                if (gA !== gB) return gA.localeCompare(gB)
+                return a.vmName.localeCompare(b.vmName)
+              }).map(tab => {
                 const tabId = `vm-${tab.vmUuid}`
                 const isActive = activeTab === tabId
                 return (
@@ -198,16 +188,48 @@ export default function Layout() {
 
         {/* Footer */}
         <div className="px-3 py-3 border-t border-slate-200 dark:border-slate-800 space-y-1">
-          <button onClick={toggleTheme} className="sidebar-item w-full text-left">
-            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-          </button>
-          {authConfig?.user_management && (
-            <button onClick={logout} className="sidebar-item w-full text-left text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-500">
-              <LogOut className="w-4 h-4" />
-              Sign Out
+          <div className="flex items-center justify-around py-1">
+            <div className="px-1" title={serverOnline ? 'Server connected' : 'Server unreachable'}>
+              {serverOnline
+                ? <Server className="w-3.5 h-3.5 text-emerald-500" />
+                : <ServerOff className="w-3.5 h-3.5 text-red-400 animate-pulse" />
+              }
+            </div>
+            <button
+              onClick={() => setTheme('light')}
+              className={clsx(
+                'p-1.5 rounded-md transition-colors',
+                theme === 'light'
+                  ? 'bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400'
+                  : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+              )}
+              title="Light Mode"
+            >
+              <Sun className="w-4 h-4" />
             </button>
-          )}
+            <button
+              onClick={() => setTheme('dark')}
+              className={clsx(
+                'p-1.5 rounded-md transition-colors',
+                theme === 'dark'
+                  ? 'bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400'
+                  : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+              )}
+              title="Dark Mode"
+            >
+              <Moon className="w-4 h-4" />
+            </button>
+            {authConfig?.user_management && (
+              <button
+                onClick={logout}
+                className="p-1.5 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                title="Sign Out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
           {currentUser && authConfig?.user_management && (
             <div className="px-3 py-2 text-xs text-slate-500 dark:text-slate-500 truncate">
               Signed in as <span className="font-medium text-slate-700 dark:text-slate-300">{currentUser.username}</span>
@@ -226,34 +248,6 @@ export default function Layout() {
           </div>
         )}
 
-        {/* VM console tab bar */}
-        <div className="h-10 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center px-4 gap-1 overflow-x-auto flex-shrink-0">
-          {openTabs.map(tab => (
-            <button
-              key={tab.vmId}
-              draggable
-              onDragStart={() => { dragSrc.current = tab.vmId }}
-              onDragOver={e => { e.preventDefault() }}
-              onDrop={() => { if (dragSrc.current !== null) reorderTabs(dragSrc.current, tab.vmId) }}
-              onDragEnd={() => { dragSrc.current = null }}
-              onClick={() => setActiveTab(`vm-${tab.vmUuid}`)}
-              data-state={activeTab === `vm-${tab.vmUuid}` ? 'active' : 'inactive'}
-              className="tab-trigger relative flex items-center gap-1.5 cursor-grab active:cursor-grabbing"
-            >
-              {tab.group_color && (
-                <span className="absolute inset-0 pointer-events-none" style={{ background: `linear-gradient(to top, ${tab.group_color} 0%, transparent 40%)`, opacity: 0.35 }} />
-              )}
-              <StatusDot status={tab.status} />
-              {tab.vmName}
-              <span
-                onClick={(e) => { e.stopPropagation(); closeVMTab(tab.vmId) }}
-                className="ml-0.5 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 opacity-50 hover:opacity-100"
-              >
-                <X className="w-3 h-3" />
-              </span>
-            </button>
-          ))}
-        </div>
 
         {/* Page content */}
         <div className="flex-1 overflow-hidden relative">
