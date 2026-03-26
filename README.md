@@ -21,6 +21,30 @@ See [`Quickstart.md`](Quickstart.md) for the fast path.
 - **Import**: import existing VMs and convert legacy `86box.cfg` into the new v5 format
 - **Docker first**: build + run with `docker compose`
 
+## Screenshots
+
+Click any thumbnail to open the full image.
+
+<p>
+  <a href="docs/images/login.png"><img src="docs/images/login.png" alt="Login" width="360" /></a>
+  <a href="docs/images/dashboard.png"><img src="docs/images/dashboard.png" alt="Dashboard" width="360" /></a>
+</p>
+
+<p>
+  <a href="docs/images/vm_grid.png"><img src="docs/images/vm_grid.png" alt="VM Grid" width="360" /></a>
+  <a href="docs/images/vm_list.png"><img src="docs/images/vm_list.png" alt="VM List" width="360" /></a>
+</p>
+
+<p>
+  <a href="docs/images/vm_console.png"><img src="docs/images/vm_console.png" alt="VM Console" width="360" /></a>
+  <a href="docs/images/vm_settings.png"><img src="docs/images/vm_settings.png" alt="VM Settings" width="360" /></a>
+</p>
+
+<p>
+  <a href="docs/images/media_manager.png"><img src="docs/images/media_manager.png" alt="Media Manager (WIP)" width="360" /></a>
+  <a href="docs/images/database_explorer.png"><img src="docs/images/database_explorer.png" alt="Database Explorer" width="360" /></a>
+</p>
+
 ## Architecture (2 services)
 
 Sphere86 runs as **two Docker services**:
