@@ -1,11 +1,12 @@
 FROM ubuntu:22.04
 
-LABEL maintainer="86Web"
-LABEL description="86Web Engine (FastAPI Backend + 86Box Runner Manager)"
+LABEL maintainer="Sphere86"
+LABEL description="Sphere86 Engine (FastAPI Backend + 86Box Runner Manager)"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    tzdata \
     python3 \
     python3-pip \
     python3-venv \
@@ -87,10 +88,10 @@ RUN printf '#!/bin/sh\nexec python3 /app/scripts/query_86box.py "$@"\n' > /usr/l
 COPY runner/app/ ./runner/app/
 
 # Setup supervisord
-COPY engine/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Entrypoint
-COPY engine/entrypoint.sh /entrypoint.sh
+COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 EXPOSE 8000 8001

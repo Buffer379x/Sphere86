@@ -1,15 +1,15 @@
-# 86Web
+# Sphere86
 
-**86Web** is a web-based management interface for [86Box](https://86box.net) PC emulation — inspired by VMware ESXi — that lets you create, configure, start/stop, and interact with vintage PC virtual machines directly in your browser.
+**Sphere86** is a web-based management interface for [86Box](https://86box.net) PC emulation — inspired by VMware ESXi — that lets you create, configure, start/stop, and interact with vintage PC virtual machines directly in your browser.
 
 ---
 
 ## TL;DR — Quick Start
 
 ```bash
-git clone <repo> 86web && cd 86web
-sudo useradd -r -g 86web -s /usr/sbin/nologin 86web  # create service user (groupadd -r 86web first)
-cp .env.example .env          # set PUID/PGID to match 86web user, set ADMIN_PASSWORD
+git clone <repo> Sphere86 && cd Sphere86
+sudo useradd -r -g Sphere86 -s /usr/sbin/nologin Sphere86  # create service user (groupadd -r Sphere86 first)
+cp .env.example .env          # set PUID/PGID to match Sphere86 user, set ADMIN_PASSWORD
 sudo bash scripts/init-data.sh  # create data directories with correct ownership
 docker compose up -d          # build and start
 ```
@@ -34,7 +34,7 @@ Open `http://localhost` — log in as `admin` / `changeme` (or whatever you set)
 - **Auto-update** — Downloads the latest 86Box binary and ROM files on startup; manual trigger from Settings
 - **VM Auto-Shutdown** — Optionally stop VMs that have been running longer than a configurable time limit (env var `VM_AUTO_SHUTDOWN_MINUTES`) — useful for shared installs
 - **SSL/TLS Support** — Optional HTTPS with automatic HTTP-to-HTTPS redirect; bring your own certificates (e.g. Let's Encrypt)
-- **macvlan Support** — Give 86Web its own IP on your LAN; no port forwarding needed
+- **macvlan Support** — Give Sphere86 its own IP on your LAN; no port forwarding needed
 - **Dark & Light Mode**
 - **Fully Dockerised** — `docker compose up` and you're running
 
@@ -75,23 +75,23 @@ Browse the full 86Box hardware compatibility database. Navigate by category (mac
 ### 1. Clone the repository
 
 ```bash
-git clone <repo> /srv/86web
-cd /srv/86web
+git clone <repo> /srv/Sphere86
+cd /srv/Sphere86
 ```
 
 ### 2. Create a service user
 
-Create a dedicated system user and group for 86Web. All container processes run as this UID/GID.
+Create a dedicated system user and group for Sphere86. All container processes run as this UID/GID.
 
 ```bash
-sudo groupadd -r 86web
-sudo useradd -r -g 86web -s /usr/sbin/nologin -d /srv/86web 86web
+sudo groupadd -r Sphere86
+sudo useradd -r -g Sphere86 -s /usr/sbin/nologin -d /srv/Sphere86 Sphere86
 ```
 
 Note the UID and GID for the next step:
 
 ```bash
-id 86web    # e.g. uid=990(86web) gid=990(86web)
+id Sphere86    # e.g. uid=990(Sphere86) gid=990(Sphere86)
 ```
 
 ### 3. Configure `.env`
@@ -112,7 +112,7 @@ sudo bash scripts/init-data.sh
 This creates the required subdirectory tree under `DATA_PATH` and sets ownership to `PUID:PGID`. If you're using a shared library, ensure it's also readable:
 
 ```bash
-sudo chown -R $(id -u 86web):$(id -g 86web) ${DATA_PATH:-./data}
+sudo chown -R $(id -u Sphere86):$(id -g Sphere86) ${DATA_PATH:-./data}
 sudo chmod -R u+rwX ${DATA_PATH:-./data}
 ```
 
@@ -177,7 +177,7 @@ LDAP is only active when **both** `USER_MANAGEMENT=true` **and** `LDAP_ENABLED=t
 | `LDAP_BIND_DN` | *(empty)* | DN used to bind for directory searches (read-only service account), e.g. `cn=readonly,dc=corp,dc=example,dc=com`. |
 | `LDAP_BIND_PASSWORD` | *(empty)* | Password for `LDAP_BIND_DN`. |
 | `LDAP_USER_FILTER` | `(objectClass=person)` | LDAP filter applied when searching for a user by username. |
-| `LDAP_GROUP_DN` | *(empty)* | DN of the group whose members are allowed to log in, e.g. `cn=86web-users,ou=groups,dc=corp,dc=example,dc=com`. Leave empty to allow all LDAP users. |
+| `LDAP_GROUP_DN` | *(empty)* | DN of the group whose members are allowed to log in, e.g. `cn=Sphere86-users,ou=groups,dc=corp,dc=example,dc=com`. Leave empty to allow all LDAP users. |
 | `LDAP_USERNAME_ATTR` | `uid` | LDAP attribute that contains the username (Active Directory: `sAMAccountName`). |
 | `LDAP_EMAIL_ATTR` | `mail` | LDAP attribute that contains the user's email address. |
 | `LDAP_TLS` | `false` | Enable StartTLS on the LDAP connection. |
@@ -211,7 +211,7 @@ Quotas only apply when `USER_MANAGEMENT=true`. Admins are not subject to quotas.
 
 ## Architecture
 
-86Web is three Docker containers communicating over a private bridge network. Only the `web` container is exposed to the outside.
+Sphere86 is three Docker containers communicating over a private bridge network. Only the `web` container is exposed to the outside.
 
 ```
 Browser
@@ -250,7 +250,7 @@ Browser
 ### Container: `backend` (FastAPI)
 
 - REST API for all frontend operations (auth, VM CRUD, groups, users, media, system stats)
-- SQLite database at `$DATA_PATH/config/86web.db` — stores users, VMs, groups, settings
+- SQLite database at `$DATA_PATH/config/Sphere86.db` — stores users, VMs, groups, settings
 - JWT-based authentication with optional LDAP integration
 - Generates `86box.cfg` files from VM configuration stored as JSON in the database
 - Delegates VM lifecycle operations (start/stop/reset) to the runner via HTTP
@@ -306,7 +306,7 @@ DATA_PATH/
 │           └── library/       ← symlink/mount point for shared library
 ├── roms/                      ← 86Box ROM files (auto-downloaded)
 ├── config/
-│   └── 86web.db               ← SQLite database
+│   └── Sphere86.db               ← SQLite database
 ├── cache/
 │   └── 86box/
 │       └── 86Box              ← downloaded 86Box binary
@@ -320,7 +320,7 @@ DATA_PATH/
 
 ## macvlan (Static LAN IP)
 
-To give 86Web its own IP address on your LAN (no port forwarding, appears as a physical host):
+To give Sphere86 its own IP address on your LAN (no port forwarding, appears as a physical host):
 
 ```bash
 # Create the macvlan network once (adjust subnet/gateway/parent to match your LAN)
@@ -381,7 +381,7 @@ LDAP_PORT=389
 LDAP_BASE_DN=dc=corp,dc=example,dc=com
 LDAP_BIND_DN=cn=readonly,dc=corp,dc=example,dc=com
 LDAP_BIND_PASSWORD=secret
-LDAP_GROUP_DN=cn=86web-users,ou=groups,dc=corp,dc=example,dc=com
+LDAP_GROUP_DN=cn=Sphere86-users,ou=groups,dc=corp,dc=example,dc=com
 LDAP_USERNAME_ATTR=uid
 LDAP_EMAIL_ATTR=mail
 LDAP_TLS=false
@@ -406,7 +406,7 @@ cd runner && pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8001
 ```
 
-The frontend dev server proxies `/api/`, `/vnc/`, and `/vms/*/audio` to the local backend/runner — see `frontend/vite.config.ts`.
+The frontend dev server proxies `/api/`, `/vnc/`, and `/vms/*/audio` to the local backend/runner — see `web/vite.config.ts`.
 
 ---
 
