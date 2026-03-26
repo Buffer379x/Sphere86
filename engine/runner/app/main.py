@@ -264,14 +264,16 @@ async def audio_stream(vm_id: int):
     async def generate():
         proc = await asyncio.create_subprocess_exec(
             "ffmpeg",
-            # Minimise input probe/analysis buffering
             "-fflags", "+nobuffer",
             "-probesize", "32",
             "-analyzeduration", "0",
             "-f", "pulse",
+            "-fragment_size", "1024",
             "-i", "box86_sink.monitor",
+            "-af", "aresample=async=1",
             "-c:a", "libmp3lame",
             "-b:a", "128k",
+            "-reservoir", "0",
             "-vn",
             "-f", "mp3",
             "-flush_packets", "1",
@@ -282,8 +284,7 @@ async def audio_stream(vm_id: int):
             env=pulse_env,
         )
 
-        # Give ffmpeg a moment, then confirm it's still alive
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0.1)
         if proc.returncode is not None:
             try:
                 err = await asyncio.wait_for(proc.stderr.read(), timeout=2.0)

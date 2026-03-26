@@ -596,7 +596,7 @@ export default function SettingsPage() {
                           type="number"
                           step="0.1"
                           className="input w-28 text-sm"
-                          value={formState.audio_buffer_secs || 0.4}
+                          value={formState.audio_buffer_secs || 0.15}
                           onChange={e => setFormState(s => ({ ...s, audio_buffer_secs: parseFloat(e.target.value) }))}
                         />
                         <button className="btn-secondary px-2.5 py-1.5" onClick={() => saveSettings({ audio_buffer_secs: formState.audio_buffer_secs })}>Save</button>

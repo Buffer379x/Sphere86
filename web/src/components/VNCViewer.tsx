@@ -130,6 +130,10 @@ export default function VNCViewer({ vmId, vmName, isVisible = true }: Props) {
   const isPaused = vmStatus?.status === 'paused'
   const isAlive = isRunning || isPaused  // process is up (running or paused)
 
+  useEffect(() => {
+    if (!isVisible || !isRunning) setKeyboardActive(false)
+  }, [isVisible, isRunning])
+
   // Sync startedAt from server uptime on each poll, then tick locally every second
   useEffect(() => {
     if (vmStatus?.uptime != null && isAlive) {
@@ -244,14 +248,11 @@ export default function VNCViewer({ vmId, vmName, isVisible = true }: Props) {
 
   // Configurable audio buffer (seconds). Set AUDIO_BUFFER_SECS in .env to tune.
   // Lower = less latency but more risk of underrun/choppiness.
-  const audioBuf = parseFloat(import.meta.env.VITE_AUDIO_BUFFER_SECS ?? '0.05')
+  const audioBuf = parseFloat(import.meta.env.VITE_AUDIO_BUFFER_SECS ?? '0.15')
 
   // MSE-based audio streaming.
-  // Using MediaSource Extensions lets us control the buffer directly, keeping
-  // playback pinned to the live edge with low latency.
   // Only stream audio for the active (visible) tab to avoid spawning multiple
-  // ffmpeg processes on the server simultaneously — which exhausts CPU and causes
-  // the health check to time out, making the whole UI appear offline.
+  // ffmpeg processes on the server simultaneously.
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
@@ -270,12 +271,9 @@ export default function VNCViewer({ vmId, vmName, isVisible = true }: Props) {
     ms.addEventListener('sourceopen', async () => {
       URL.revokeObjectURL(objectUrl)
 
-      const mimeType = 'audio/mpeg'
       let sb: SourceBuffer
       try {
-        sb = ms.addSourceBuffer(mimeType)
-        // MP3 frames carry no timestamps, so 'sequence' mode is correct:
-        // the browser assigns presentation time based on append order.
+        sb = ms.addSourceBuffer('audio/mpeg')
         sb.mode = 'sequence'
       } catch (e) {
         console.error('MSE SourceBuffer error:', e)
@@ -284,26 +282,30 @@ export default function VNCViewer({ vmId, vmName, isVisible = true }: Props) {
 
       sb.addEventListener('error', (e) => console.error('SourceBuffer error:', e))
 
-      // Queue stores proper ArrayBuffer copies.
-      // IMPORTANT: fetch reader gives Uint8Array views into a larger shared buffer;
-      // we must slice out only the valid bytes, not pass the whole .buffer.
       const queue: ArrayBuffer[] = []
       let busy = false
       let started = false
 
+      const getLiveEdge = () =>
+        sb.buffered.length > 0 ? sb.buffered.end(sb.buffered.length - 1) : 0
+
+      const syncToLive = () => {
+        const le = getLiveEdge()
+        if (le > audioBuf) {
+          audio.currentTime = le - audioBuf
+        }
+      }
+
       const pump = () => {
         if (busy || sb.updating) return
-
-        // Trim data behind the playhead first to cap memory usage.
         if (sb.buffered.length > 0) {
           const trimTo = audio.currentTime - 2.0
           if (trimTo > sb.buffered.start(0)) {
             busy = true
             sb.remove(sb.buffered.start(0), trimTo)
-            return // updateend fires → pump() resumes
+            return
           }
         }
-
         if (!queue.length) return
         busy = true
         sb.appendBuffer(queue.shift()!)
@@ -311,23 +313,26 @@ export default function VNCViewer({ vmId, vmName, isVisible = true }: Props) {
 
       sb.addEventListener('updateend', () => {
         busy = false
-
-        if (sb.buffered.length > 0) {
-          const liveEdge = sb.buffered.end(sb.buffered.length - 1)
-
-          if (!started && liveEdge >= audioBuf + 0.05) {
-            // Start playback once we have audioBuf + a tiny headroom.
-            started = true
-            audio.currentTime = Math.max(0, liveEdge - audioBuf)
-            audio.play().catch(() => { })
-          } else if (started && liveEdge - audio.currentTime > 2.0) {
-            // Drift correction for high latency (clock skew / tab suspend / autoplay blocked).
-            audio.currentTime = liveEdge - audioBuf
-          }
+        if (!started && getLiveEdge() >= audioBuf + 0.05) {
+          started = true
+          syncToLive()
+          audio.play().catch(() => {})
         }
-
         pump()
       })
+
+      // Periodic drift correction — runs independently of MSE events so we
+      // catch drift even when the audio element stalls or the tab was suspended.
+      const driftInterval = setInterval(() => {
+        if (!started || sb.buffered.length === 0) return
+        const behind = getLiveEdge() - audio.currentTime
+        if (behind > 0.5 || behind < -0.1) {
+          syncToLive()
+        }
+        if (audio.paused && started) {
+          audio.play().catch(() => {})
+        }
+      }, 250)
 
       try {
         const res = await fetch(`/vms/${vmId}/audio`, { signal: controller.signal })
@@ -338,13 +343,14 @@ export default function VNCViewer({ vmId, vmName, isVisible = true }: Props) {
           const { done, value } = await reader.read()
           if (done || controller.signal.aborted) break
           if (value) {
-            // Slice out only the valid bytes from the underlying shared buffer.
             queue.push(value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength))
             pump()
           }
         }
       } catch (e: any) {
         if (e?.name !== 'AbortError') console.error('Audio stream error:', e)
+      } finally {
+        clearInterval(driftInterval)
       }
     }, { once: true })
 
@@ -798,25 +804,27 @@ export default function VNCViewer({ vmId, vmName, isVisible = true }: Props) {
         />
       )}
 
-      {/* Hidden textarea with enhanced event listeners */}
-      <textarea
-        ref={keyboardInputRef}
-        className="fixed opacity-0 p-0 w-0 h-0 pointer-events-none z-[-9999]"
-        style={{ top: '-9999px', left: '-9999px' }}
-        autoComplete="off"
-        aria-hidden="true"
-        data-1p-ignore="true"
-        data-lpignore="true"
-        data-bwignore="true"
-        tabIndex={-1}
-        autoCapitalize="none"
-        autoCorrect="off"
-        spellCheck={false}
-        onFocus={() => setKeyboardActive(true)}
-        onBlur={() => setKeyboardActive(false)}
-        onChange={handleHiddenInput}
-        onKeyDown={handleHiddenKeyDown}
-      />
+      {isVisible && isRunning && (
+        <textarea
+          ref={keyboardInputRef}
+          className="fixed opacity-0 p-0 w-0 h-0 pointer-events-none z-[-9999]"
+          style={{ top: '-9999px', left: '-9999px' }}
+          autoComplete="off"
+          aria-hidden="true"
+          data-1p-ignore="true"
+          data-lpignore="true"
+          data-bwignore="true"
+          data-form-type="other"
+          tabIndex={-1}
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          onFocus={() => setKeyboardActive(true)}
+          onBlur={() => setKeyboardActive(false)}
+          onChange={handleHiddenInput}
+          onKeyDown={handleHiddenKeyDown}
+        />
+      )}
 
     </div>
   )

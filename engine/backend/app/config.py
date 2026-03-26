@@ -63,7 +63,7 @@ class Settings(BaseSettings):
     log_dir: str = "/data/logs"
 
     # Audio
-    audio_buffer_secs: float = 0.4
+    audio_buffer_secs: float = 0.15
 
     # Data paths (inside container)
     data_path: str = "/data"

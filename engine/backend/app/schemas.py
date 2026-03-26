@@ -398,7 +398,7 @@ class AppSettings(BaseModel):
     # Maintenance & Logging
     vm_auto_shutdown_minutes: int = 0
     log_level: str = "info"
-    audio_buffer_secs: float = 0.4
+    audio_buffer_secs: float = 0.15
 
 
 # ─── Drive Management ────────────────────────────────────────────────────────

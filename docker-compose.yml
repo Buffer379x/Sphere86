@@ -26,7 +26,7 @@ services:
       context: ./web
       dockerfile: Dockerfile
       args:
-        - VITE_AUDIO_BUFFER_SECS=${AUDIO_BUFFER_SECS:-0.2}
+        - VITE_AUDIO_BUFFER_SECS=${AUDIO_BUFFER_SECS:-0.15}
       network: host
     container_name: Sphere86-nginx
     restart: unless-stopped
