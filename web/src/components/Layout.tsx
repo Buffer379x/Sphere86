@@ -124,7 +124,7 @@ export default function Layout() {
         {/* Logo */}
         <div className="h-12 flex items-center px-4">
           <div className="flex items-center gap-2.5 flex-1 min-w-0">
-            <img src="/icon.png" alt="Sphere86" className="w-7 h-7 flex-shrink-0 object-contain" />
+            <img src="/logo.png" alt="Sphere86" className="w-7 h-7 flex-shrink-0 object-contain" />
             <div className="min-w-0">
               <span className="font-bold text-slate-900 dark:text-white text-base tracking-tight">Sphere86</span>
             </div>

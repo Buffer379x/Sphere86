@@ -16,7 +16,7 @@ export default function AboutPage({ hideHeader }: { hideHeader?: boolean }) {
       {/* Sphere86 */}
       <div className="card px-6 py-5 space-y-3">
         <div className="flex items-center gap-3">
-          <img src="/icon.png" alt="Sphere86" className="w-10 h-10 object-contain flex-shrink-0" />
+          <img src="/logo.png" alt="Sphere86" className="w-10 h-10 object-contain flex-shrink-0" />
           <div>
             <h2 className="font-semibold text-slate-900 dark:text-white">Sphere86</h2>
           </div>
