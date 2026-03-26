@@ -57,18 +57,12 @@ export const useStore = create<AppStore>()(
 
       setToken: (token) => {
         set({ token })
-        if (token) {
-          localStorage.setItem('Sphere86_token', token)
-        } else {
-          localStorage.removeItem('Sphere86_token')
-        }
       },
 
       setCurrentUser: (user) => set({ currentUser: user }),
       setAuthConfig: (config) => set({ authConfig: config }),
 
       logout: () => {
-        localStorage.removeItem('Sphere86_token')
         set({ token: null, currentUser: null, openTabs: [], activeTab: 'dashboard' })
       },
 

@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
@@ -13,13 +14,17 @@ from .database import get_db
 from .config import get_settings
 from .schemas import TokenData
 from . import models
+from .services.settings import DynamicSettings
 
 settings = get_settings()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token", auto_error=False)
 
+_LDAP_ESCAPE_RE = re.compile(r'([\\*\(\)\x00/])')
 
-from .services.settings import DynamicSettings
+def _ldap_escape(value: str) -> str:
+    """Escape special characters for safe use in LDAP filter expressions."""
+    return _LDAP_ESCAPE_RE.sub(lambda m: '\\' + format(ord(m.group(1)), '02x'), value)
 
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
@@ -67,6 +72,8 @@ def ldap_authenticate(db: Session, username: str, password: str) -> bool:
     ds = DynamicSettings(db)
     if not ds.ldap_enabled:
         return False
+    conn = None
+    user_conn = None
     try:
         from ldap3 import Server, Connection, ALL, SUBTREE, Tls
         import ssl
@@ -74,22 +81,19 @@ def ldap_authenticate(db: Session, username: str, password: str) -> bool:
         tls = Tls(validate=ssl.CERT_NONE) if ds.ldap_tls else None
         server = Server(ds.ldap_server, port=ds.ldap_port, use_ssl=ds.ldap_tls, tls=tls, get_info=ALL)
 
-        # Bind with service account
         conn = Connection(server, ds.ldap_bind_dn, ds.ldap_bind_password, auto_bind=True)
 
-        # Find user DN
-        user_filter = f"(&{ds.ldap_user_filter}({ds.ldap_username_attr}={username}))"
+        safe_username = _ldap_escape(username)
+        user_filter = f"(&{ds.ldap_user_filter}({ds.ldap_username_attr}={safe_username}))"
         conn.search(ds.ldap_base_dn, user_filter, attributes=[ds.ldap_username_attr, ds.ldap_email_attr])
         if not conn.entries:
             return False
         user_dn = conn.entries[0].entry_dn
 
-        # Try to bind as the user
         user_conn = Connection(server, user_dn, password, auto_bind=True)
         if not user_conn.bound:
             return False
 
-        # Check group membership if configured
         if ds.ldap_group_dn:
             conn.search(
                 ds.ldap_group_dn,
@@ -103,6 +107,13 @@ def ldap_authenticate(db: Session, username: str, password: str) -> bool:
     except Exception as e:
         logger.error("LDAP auth error: %s", e)
         return False
+    finally:
+        if user_conn:
+            try: user_conn.unbind()
+            except Exception: pass
+        if conn:
+            try: conn.unbind()
+            except Exception: pass
 
 
 def ldap_get_or_create_user(db: Session, username: str, password: str) -> Optional[models.User]:
@@ -110,6 +121,8 @@ def ldap_get_or_create_user(db: Session, username: str, password: str) -> Option
     ds = DynamicSettings(db)
     if not ds.ldap_enabled:
         return None
+    conn = None
+    user_conn = None
     try:
         from ldap3 import Server, Connection, ALL, SUBTREE, Tls
         import ssl
@@ -118,7 +131,8 @@ def ldap_get_or_create_user(db: Session, username: str, password: str) -> Option
         server = Server(ds.ldap_server, port=ds.ldap_port, use_ssl=ds.ldap_tls, tls=tls, get_info=ALL)
         conn = Connection(server, ds.ldap_bind_dn, ds.ldap_bind_password, auto_bind=True)
 
-        user_filter = f"(&{ds.ldap_user_filter}({ds.ldap_username_attr}={username}))"
+        safe_username = _ldap_escape(username)
+        user_filter = f"(&{ds.ldap_user_filter}({ds.ldap_username_attr}={safe_username}))"
         conn.search(ds.ldap_base_dn, user_filter, attributes=[ds.ldap_username_attr, ds.ldap_email_attr])
         if not conn.entries:
             return None
@@ -127,18 +141,15 @@ def ldap_get_or_create_user(db: Session, username: str, password: str) -> Option
         user_dn = entry.entry_dn
         email = str(getattr(entry, ds.ldap_email_attr, username + "@ldap.local"))
 
-        # Bind as user to verify password
         user_conn = Connection(server, user_dn, password, auto_bind=True)
         if not user_conn.bound:
             return None
 
-        # Check group membership
         if ds.ldap_group_dn:
             conn.search(ds.ldap_group_dn, f"(member={user_dn})", search_scope=SUBTREE)
             if not conn.entries:
-                return None  # Not in required group
+                return None
 
-        # Get or create user
         user = db.query(models.User).filter(models.User.username == username).first()
         if not user:
             user = models.User(
@@ -157,6 +168,13 @@ def ldap_get_or_create_user(db: Session, username: str, password: str) -> Option
     except Exception as e:
         logger.error("LDAP get_or_create error: %s", e)
         return None
+    finally:
+        if user_conn:
+            try: user_conn.unbind()
+            except Exception: pass
+        if conn:
+            try: conn.unbind()
+            except Exception: pass
 
 
 async def get_current_user(

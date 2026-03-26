@@ -88,9 +88,13 @@ function StatCard({ label, value, sub, icon: Icon, percent, color = 'blue', hist
   }
   const c = colors[color] || colors.blue
   const pct = percent !== undefined ? Math.min(100, Math.max(0, percent)) : null
+  const hasHistory = history && history.length > 1
 
   return (
-    <div className={clsx("card p-6 flex gap-6 min-h-[180px]", pct !== null ? "items-center justify-between" : "flex-col")}>
+    <div className={clsx(
+      "card p-6 flex min-h-[180px]",
+      hasHistory ? "flex-col gap-3" : pct !== null ? "items-center justify-between gap-6" : "flex-col gap-6",
+    )}>
       <div className="flex flex-col gap-4 min-w-0 flex-1">
         <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${c.icon}`}>
           <Icon className="w-5 h-5" />
@@ -104,11 +108,11 @@ function StatCard({ label, value, sub, icon: Icon, percent, color = 'blue', hist
         </div>
       </div>
 
-      {pct !== null && (
+      {pct !== null && !hasHistory && (
         <CircularProgress size={100} strokeWidth={8} percentage={pct} color={c.spark} />
       )}
 
-      {history && history.length > 1 && (
+      {hasHistory && (
         <div className="w-full mt-auto">
           <SparkArea data={history} color={c.spark} />
         </div>

@@ -51,13 +51,8 @@ class VMProcesses:
 
     @property
     def status(self) -> str:
-        if self.box86_proc is not None:
-            # asyncio.Process uses returncode
-            if hasattr(self.box86_proc, "returncode") and self.box86_proc.returncode is None:
-                return "paused" if self.paused else "running"
-            # Fallback for standard Popen if used
-            if hasattr(self.box86_proc, "poll") and self.box86_proc.poll() is None:
-                return "paused" if self.paused else "running"
+        if _is_proc_alive(self.box86_proc):
+            return "paused" if self.paused else "running"
         return "stopped"
 
 
@@ -185,6 +180,17 @@ def _teardown_network(vm_id: int, group_id: int, remaining_group_vms: list, tap_
         ok, _ = _run_ip("link", "delete", bridge)
         if ok:
             log.info("Network: destroyed bridge %s (group %d, no remaining VMs)", bridge, group_id)
+
+
+def _is_proc_alive(proc) -> bool:
+    """Check if an asyncio.Process or subprocess.Popen is still running."""
+    if proc is None:
+        return False
+    if hasattr(proc, 'returncode'):
+        return proc.returncode is None
+    if hasattr(proc, 'poll'):
+        return proc.poll() is None
+    return False
 
 
 def _inject_cfg_options(cfg_path: str, overrides: dict):
@@ -520,15 +526,15 @@ class VMProcessManager:
             return {"error": "VM not running"}
 
         log.info("Resetting VM %d (restarting 86Box)", vm_id)
-        
-        proc = procs.box86_proc
-        is_running = False
-        if hasattr(proc, 'returncode'):
-            is_running = proc.returncode is None
-        elif hasattr(proc, 'poll'):
-            is_running = proc.poll() is None
 
-        if is_running:
+        if procs.log_file:
+            try: procs.log_file.close()
+            except Exception: pass
+            procs.log_file = None
+
+        proc = procs.box86_proc
+
+        if _is_proc_alive(proc):
             try:
                 proc.terminate()
             except Exception:
@@ -592,14 +598,8 @@ class VMProcessManager:
         procs = self._vms.get(vm_id)
         if not procs or not procs.box86_proc:
             return {"error": "VM not running"}
-        
-        is_running = False
-        if hasattr(procs.box86_proc, 'returncode'):
-            is_running = procs.box86_proc.returncode is None
-        elif hasattr(procs.box86_proc, 'poll'):
-            is_running = procs.box86_proc.poll() is None
-            
-        if not is_running:
+
+        if not _is_proc_alive(procs.box86_proc):
             return {"error": "VM not running"}
 
         pid = procs.box86_proc.pid
@@ -626,14 +626,7 @@ class VMProcessManager:
         # Kill in reverse startup order.
         # 86Box runs in its own process group (preexec_fn=os.setpgrp) so we use
         # killpg to also terminate AppImage child processes.
-        if procs.box86_proc:
-            is_running = False
-            if hasattr(procs.box86_proc, 'returncode'):
-                is_running = procs.box86_proc.returncode is None
-            elif hasattr(procs.box86_proc, 'poll'):
-                is_running = procs.box86_proc.poll() is None
-            
-            if is_running:
+        if _is_proc_alive(procs.box86_proc):
                 try:
                     # Resume first if paused — a SIGSTOP'd process group won't respond to SIGTERM
                     if procs.paused:
@@ -660,15 +653,7 @@ class VMProcessManager:
 
         await asyncio.sleep(1.0)
 
-        # Force kill if still alive
-        if procs.box86_proc:
-            is_running = False
-            if hasattr(procs.box86_proc, 'returncode'):
-                is_running = procs.box86_proc.returncode is None
-            elif hasattr(procs.box86_proc, 'poll'):
-                is_running = procs.box86_proc.poll() is None
-                
-            if is_running:
+        if _is_proc_alive(procs.box86_proc):
                 try:
                     os.killpg(procs.box86_proc.pid, signal.SIGKILL)
                 except Exception:

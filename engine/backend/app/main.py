@@ -7,6 +7,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+from sqlalchemy import text
 
 from .config import get_settings
 from .database import engine, Base, SessionLocal
@@ -43,9 +44,7 @@ def _migrate_db():
         # Add network_enabled to vm_groups (added in v2)
         try:
             conn.execute(
-                __import__("sqlalchemy").text(
-                    "ALTER TABLE vm_groups ADD COLUMN network_enabled BOOLEAN NOT NULL DEFAULT 0"
-                )
+                text("ALTER TABLE vm_groups ADD COLUMN network_enabled BOOLEAN NOT NULL DEFAULT 0")
             )
             conn.commit()
             log.info("Migration: added network_enabled column to vm_groups")
@@ -145,7 +144,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Sphere86 API",
-    version="1.4.0",
+    version="1.4.1",
     lifespan=lifespan,
     docs_url="/api/docs",
     redoc_url="/api/redoc",
@@ -154,12 +153,12 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=[],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
 )
-app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["127.0.0.1", "::1", "web", "nginx"])
 
 app.include_router(auth.router)
 app.include_router(vms.router)

@@ -10,31 +10,26 @@ from ..auth import (
 )
 from ..models import User
 from ..schemas import Token, LoginRequest, UserResponse
-from ..config import get_settings
+from ..services.settings import DynamicSettings
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
-settings = get_settings()
 
 
-@router.post("/token", response_model=Token)
-async def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db),
-):
-    if not settings.user_management:
-        # No auth needed — return a dummy token
+def _do_login(db: Session, username: str, password: str) -> Token:
+    """Shared authentication logic for both form-based and JSON login."""
+    ds = DynamicSettings(db)
+
+    if not ds.user_management:
         user = db.query(User).filter(User.is_admin == True).first()
         if not user:
             raise HTTPException(status_code=500, detail="No admin user configured")
         token = create_access_token({"sub": user.username, "uid": user.id, "admin": user.is_admin})
         return Token(access_token=token)
 
-    # Try local auth first
-    user = authenticate_user(db, form_data.username, form_data.password)
+    user = authenticate_user(db, username, password)
 
-    # If not found locally and LDAP enabled, try LDAP auto-provision
-    if not user and settings.ldap_enabled:
-        user = ldap_get_or_create_user(db, form_data.username, form_data.password)
+    if not user and ds.ldap_enabled:
+        user = ldap_get_or_create_user(db, username, password)
 
     if not user:
         raise HTTPException(
@@ -53,33 +48,21 @@ async def login(
     return Token(access_token=token)
 
 
+@router.post("/token", response_model=Token)
+async def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db),
+):
+    return _do_login(db, form_data.username, form_data.password)
+
+
 @router.post("/login", response_model=Token)
 async def login_json(
     req: LoginRequest,
     db: Session = Depends(get_db),
 ):
     """JSON login endpoint (alternative to form-based)."""
-    if not settings.user_management:
-        user = db.query(User).filter(User.is_admin == True).first()
-        if not user:
-            raise HTTPException(status_code=500, detail="No admin user configured")
-        token = create_access_token({"sub": user.username, "uid": user.id, "admin": user.is_admin})
-        return Token(access_token=token)
-
-    user = authenticate_user(db, req.username, req.password)
-    if not user and settings.ldap_enabled:
-        user = ldap_get_or_create_user(db, req.username, req.password)
-
-    if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
-    if not user.is_active:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is inactive")
-
-    user.last_login = datetime.utcnow()
-    db.commit()
-
-    token = create_access_token({"sub": user.username, "uid": user.id, "admin": user.is_admin})
-    return Token(access_token=token)
+    return _do_login(db, req.username, req.password)
 
 
 @router.get("/me", response_model=UserResponse)
@@ -96,9 +79,10 @@ async def get_me(
 
 
 @router.get("/config")
-async def get_auth_config():
+async def get_auth_config(db: Session = Depends(get_db)):
     """Public endpoint — tells the frontend whether auth is enabled."""
+    ds = DynamicSettings(db)
     return {
-        "user_management": settings.user_management,
-        "ldap_enabled": settings.ldap_enabled,
+        "user_management": ds.user_management,
+        "ldap_enabled": ds.ldap_enabled,
     }

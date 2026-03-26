@@ -1,9 +1,10 @@
 import { VM, VMConfig, VMGroup, User, SystemStats, UserStats, VersionInfo, HardwareLists, AuthConfig, AppSettings } from '../types'
+import { useStore } from '../store/useStore'
 
 const BASE = '/api'
 
 function getToken(): string | null {
-  return localStorage.getItem('Sphere86_token')
+  return useStore.getState().token
 }
 
 async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
@@ -17,10 +18,8 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
   const res = await fetch(`${BASE}${path}`, { ...opts, headers })
 
   if (res.status === 401) {
-    // Only force-redirect on session expiry (had a token). A 401 with no token
-    // means wrong credentials on the login form — let the caller handle it.
     if (getToken()) {
-      localStorage.removeItem('Sphere86_token')
+      useStore.getState().logout()
       window.location.href = '/login'
     }
     const err = await res.json().catch(() => ({ detail: 'Invalid credentials' }))
@@ -147,7 +146,7 @@ export const sharedMediaApi = {
   list: () => request<{ name: string; size: number; path: string }[]>('/media/'),
 
   upload: async (file: File): Promise<{ name: string; size: number; path: string }> => {
-    const token = localStorage.getItem('Sphere86_token')
+    const token = getToken()
     const form = new FormData()
     form.append('file', file)
     const res = await fetch('/api/media/', {
@@ -174,7 +173,7 @@ export const mediaApi = {
 
   upload: (vmId: number, file: File, onProgress?: (pct: number) => void, signal?: AbortSignal): Promise<{ name: string; size: number }> => {
     return new Promise((resolve, reject) => {
-      const token = localStorage.getItem('Sphere86_token')
+      const token = getToken()
       const form = new FormData()
       form.append('file', file)
       const xhr = new XMLHttpRequest()

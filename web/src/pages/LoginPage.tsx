@@ -151,7 +151,7 @@ export default function LoginPage() {
       setToken(access_token)
       const me = await authApi.me()
       setCurrentUser(me)
-      navigate('/', { replace: true })
+      window.location.replace('/')
     } catch (err: any) {
       setError(err.message || 'Invalid credentials')
     } finally {

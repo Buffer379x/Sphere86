@@ -17,7 +17,7 @@ from ..schemas import (
     VMGroupCreate, VMGroupUpdate, VMGroupResponse,
     DriveMount, BlankFloppyCreate,
 )
-from ..services.vm_service import VMService
+from ..services.runner_client import RunnerClient
 from ..config import get_settings
 
 router = APIRouter(prefix="/api/vms", tags=["vms"])
@@ -40,6 +40,20 @@ def _vm_to_response(vm: VM) -> VMResponse:
     if vm.locked_by:
         resp.locked_by_username = vm.locked_by.username
     return resp
+
+
+def _get_vm_or_404(db: Session, vm_id: int, user: User, *, owner_only: bool = False) -> VM:
+    """Load a VM visible to the user or raise 404. owner_only=True skips shared access."""
+    if owner_only:
+        vm = db.query(VM).filter(VM.id == vm_id, VM.user_id == user.id).first()
+    else:
+        vm = db.query(VM).filter(
+            VM.id == vm_id,
+            or_(VM.user_id == user.id, VM.shared_with.any(User.id == user.id)),
+        ).first()
+    if not vm:
+        raise HTTPException(404, "VM not found")
+    return vm
 
 
 def _group_to_response(g: VMGroup) -> VMGroupResponse:
@@ -231,10 +245,7 @@ async def get_vm(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
-    if not vm:
-        raise HTTPException(404, "VM not found")
-    return _vm_to_response(vm)
+    return _vm_to_response(_get_vm_or_404(db, vm_id, current_user))
 
 
 @router.patch("/{vm_id}", response_model=VMResponse)
@@ -244,9 +255,7 @@ async def update_vm(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    vm = db.query(VM).filter(VM.id == vm_id, VM.user_id == current_user.id).first()
-    if not vm:
-        raise HTTPException(404, "VM not found")
+    vm = _get_vm_or_404(db, vm_id, current_user, owner_only=True)
     if vm.status == "running":
         raise HTTPException(400, "Cannot modify a running VM. Stop it first.")
 
@@ -288,9 +297,7 @@ async def delete_vm(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    vm = db.query(VM).filter(VM.id == vm_id, VM.user_id == current_user.id).first()
-    if not vm:
-        raise HTTPException(404, "VM not found")
+    vm = _get_vm_or_404(db, vm_id, current_user, owner_only=True)
     if vm.status == "running":
         raise HTTPException(400, "Stop the VM before deleting it")
 
@@ -311,9 +318,7 @@ async def start_vm(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
-    if not vm:
-        raise HTTPException(404, "VM not found")
+    vm = _get_vm_or_404(db, vm_id, current_user)
     if vm.status in ("running", "paused", "starting"):
         raise HTTPException(400, "VM is already active")
     if vm.locked_by_user_id is not None and vm.locked_by_user_id != current_user.id and not current_user.is_admin:
@@ -347,8 +352,8 @@ async def start_vm(
     vm.locked_by_user_id = current_user.id
     db.commit()
 
-    service = VMService()
-    result = await service.start_vm(vm_id, vm_dir, network_group_id=network_group_id)
+    runner = RunnerClient()
+    result = await runner.start_vm(vm_id, vm_dir, network_group_id=network_group_id)
     if result.get("error"):
         vm.status = "stopped"
         vm.locked_by_user_id = None
@@ -370,16 +375,14 @@ async def stop_vm(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
-    if not vm:
-        raise HTTPException(404, "VM not found")
+    vm = _get_vm_or_404(db, vm_id, current_user)
     if vm.status not in ("running", "paused"):
         raise HTTPException(400, "VM is not running")
     if vm.locked_by_user_id is not None and vm.locked_by_user_id != current_user.id and not current_user.is_admin:
         raise HTTPException(403, f"VM is currently in use by {vm.locked_by.username}")
 
-    service = VMService()
-    await service.stop_vm(vm_id)
+    runner = RunnerClient()
+    await runner.stop_vm(vm_id)
 
     vm.status = "stopped"
     vm.vnc_port = None
@@ -397,16 +400,14 @@ async def reset_vm(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
-    if not vm:
-        raise HTTPException(404, "VM not found")
+    vm = _get_vm_or_404(db, vm_id, current_user)
     if vm.status != "running":
         raise HTTPException(400, "VM is not running")
     if vm.locked_by_user_id is not None and vm.locked_by_user_id != current_user.id and not current_user.is_admin:
         raise HTTPException(403, f"VM is currently in use by {vm.locked_by.username}")
 
-    service = VMService()
-    await service.reset_vm(vm_id)
+    runner = RunnerClient()
+    await runner.reset_vm(vm_id)
     return {"status": "reset sent"}
 
 
@@ -417,16 +418,14 @@ async def pause_vm(
     current_user: User = Depends(get_current_user),
 ):
     """Toggle pause — SIGSTOP/SIGCONT the 86Box process."""
-    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
-    if not vm:
-        raise HTTPException(404, "VM not found")
+    vm = _get_vm_or_404(db, vm_id, current_user)
     if vm.status not in ("running", "paused"):
         raise HTTPException(400, "VM is not running")
     if vm.locked_by_user_id is not None and vm.locked_by_user_id != current_user.id and not current_user.is_admin:
         raise HTTPException(403, f"VM is currently in use by {vm.locked_by.username}")
 
-    service = VMService()
-    result = await service.pause_vm(vm_id)
+    runner = RunnerClient()
+    result = await runner.pause_vm(vm_id)
     if result.get("error"):
         raise HTTPException(400, result["error"])
     return {"status": "pause sent"}
@@ -439,16 +438,14 @@ async def send_key(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
-    if not vm:
-        raise HTTPException(404, "VM not found")
+    vm = _get_vm_or_404(db, vm_id, current_user)
     if vm.locked_by_user_id is not None and vm.locked_by_user_id != current_user.id and not current_user.is_admin:
         raise HTTPException(403, f"VM is currently in use by {vm.locked_by.username}")
     key = body.get("key", "")
     if not key:
         raise HTTPException(400, "key is required")
-    service = VMService()
-    result = await service.send_key(vm_id, key)
+    runner = RunnerClient()
+    result = await runner.send_key(vm_id, key)
     if result.get("error"):
         raise HTTPException(400, result["error"])
     return result
@@ -460,13 +457,10 @@ async def get_vm_status(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
-    if not vm:
-        raise HTTPException(404, "VM not found")
+    vm = _get_vm_or_404(db, vm_id, current_user)
 
-    # Check actual runner status
-    service = VMService()
-    runner_status = await service.get_vm_status(vm_id)
+    runner = RunnerClient()
+    runner_status = await runner.get_vm_status(vm_id)
     actual_status = runner_status.get("status", "stopped")
 
     if actual_status != vm.status:
@@ -808,9 +802,7 @@ async def list_media(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
-    if not vm:
-        raise HTTPException(404, "VM not found")
+    vm = _get_vm_or_404(db, vm_id, current_user)
     files = []
     # VM-specific media
     mdir = _media_dir(current_user, vm)
@@ -837,9 +829,7 @@ async def upload_media(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
-    if not vm:
-        raise HTTPException(404, "VM not found")
+    vm = _get_vm_or_404(db, vm_id, current_user)
     if _enforce_quotas(db):
         disk_usage = sum(v.disk_usage_bytes for v in db.query(VM).filter(VM.user_id == current_user.id).all())
         if disk_usage >= current_user.max_storage_gb * 1024 ** 3:
@@ -864,9 +854,7 @@ async def delete_media(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
-    if not vm:
-        raise HTTPException(404, "VM not found")
+    vm = _get_vm_or_404(db, vm_id, current_user)
     safe_name = os.path.basename(filename)
     fp = os.path.join(_media_dir(current_user, vm), safe_name)
     if not os.path.exists(fp):
@@ -889,9 +877,7 @@ async def mount_drive(
 ):
     if drive_key not in _VALID_DRIVE_KEYS:
         raise HTTPException(400, f"Invalid drive key. Valid: {sorted(_VALID_DRIVE_KEYS)}")
-    vm = db.query(VM).filter(VM.id == vm_id, or_(VM.user_id == current_user.id, VM.shared_with.any(User.id == current_user.id))).first()
-    if not vm:
-        raise HTTPException(404, "VM not found")
+    vm = _get_vm_or_404(db, vm_id, current_user)
 
     # Security: path must be inside the VM's media dir or the user's shared media pool
     mdir = os.path.abspath(_media_dir(current_user, vm))
@@ -911,8 +897,8 @@ async def mount_drive(
     _write_86box_config(vm, vm_dir)
 
     if vm.status == "running":
-        service = VMService()
-        await service.reset_vm(vm_id)
+        runner = RunnerClient()
+        await runner.reset_vm(vm_id)
 
     return {"status": "mounted", "drive_key": drive_key, "path": abs_path}
 
@@ -926,9 +912,7 @@ async def eject_drive(
 ):
     if drive_key not in _VALID_DRIVE_KEYS:
         raise HTTPException(400, f"Invalid drive key. Valid: {sorted(_VALID_DRIVE_KEYS)}")
-    vm = db.query(VM).filter(VM.id == vm_id, VM.user_id == current_user.id).first()
-    if not vm:
-        raise HTTPException(404, "VM not found")
+    vm = _get_vm_or_404(db, vm_id, current_user)
 
     config = dict(vm.config or {})
     config[f"{drive_key}_fn"] = ""
@@ -939,8 +923,8 @@ async def eject_drive(
     _write_86box_config(vm, vm_dir)
 
     if vm.status == "running":
-        service = VMService()
-        await service.reset_vm(vm_id)
+        runner = RunnerClient()
+        await runner.reset_vm(vm_id)
 
     return {"status": "ejected", "drive_key": drive_key}
 
@@ -952,9 +936,7 @@ async def create_blank_floppy(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    vm = db.query(VM).filter(VM.id == vm_id, VM.user_id == current_user.id).first()
-    if not vm:
-        raise HTTPException(404, "VM not found")
+    vm = _get_vm_or_404(db, vm_id, current_user)
 
     valid_sizes = {360, 720, 1200, 1440, 2880}
     if body.size_kb not in valid_sizes:

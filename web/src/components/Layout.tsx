@@ -118,7 +118,7 @@ export default function Layout() {
 
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-[#0a0a0f] overflow-hidden">
+    <div className="flex h-screen bg-slate-50 dark:bg-[#0a0a0f] overflow-hidden" data-1p-ignore="true" data-lpignore="true" data-bwignore="true" data-protonpass-ignore="true">
       {/* Sidebar */}
       <aside className="w-56 flex-shrink-0 flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
         {/* Logo & Theme Toggle */}
