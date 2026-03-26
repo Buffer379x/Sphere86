@@ -6,6 +6,7 @@ LABEL description="Sphere86 Engine (FastAPI Backend + 86Box Runner Manager)"
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    tzdata \
     python3 \
     python3-pip \
     python3-venv \

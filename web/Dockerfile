@@ -26,6 +26,8 @@ RUN wget -q -O /tmp/novnc.tar.gz \
 # ── Stage 2: Nginx with built assets ──────────────────────────────────────
 FROM nginx:1.25-alpine
 
+RUN apk add --no-cache tzdata
+
 # Remove default nginx config
 RUN rm /etc/nginx/conf.d/default.conf
 

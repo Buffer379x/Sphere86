@@ -37,6 +37,7 @@ services:
     environment:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Berlin}
       - SERVER_NAME=${SERVER_NAME:-_}
       - CERTS_DIR=/etc/nginx/certs
     networks:
@@ -102,6 +103,7 @@ services:
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Berlin}
     networks:
       - private
     volumes:

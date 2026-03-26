@@ -14,6 +14,7 @@ Port allocation:
 """
 
 import asyncio
+import asyncio.subprocess
 import configparser
 import logging
 import os
@@ -22,7 +23,7 @@ import signal
 import subprocess
 import time
 from dataclasses import dataclass, field
-from typing import Dict, Optional
+from typing import Dict, Optional, Any, List, Set
 
 from .config import get_settings
 
@@ -37,30 +38,38 @@ class VMProcesses:
     display: str       # ":100"
     vnc_tcp_port: int  # Xtigervnc RFB TCP port (base_vnc_port + slot)
     vm_dir: str = ""
-    box86_cmd: list = field(default_factory=list)
+    box86_cmd: List[str] = field(default_factory=list)
     pulse_proc: Optional[subprocess.Popen] = None
     pulse_runtime: str = ""   # /tmp/pulse-vm{slot}
     vnc_proc: Optional[subprocess.Popen] = None   # Xtigervnc
-    box86_proc: Optional[subprocess.Popen] = None
+    box86_proc: Optional[Any] = None             # asyncio.subprocess.Process
     started_at: float = field(default_factory=time.time)
+    log_file: Optional[Any] = None
     network_group_id: Optional[int] = None        # group bridge id, if networking enabled
     network_tap_dev: Optional[str] = None         # actual kernel TAP device name (e.g. tap0)
     paused: bool = False
 
     @property
     def status(self) -> str:
-        if self.box86_proc and self.box86_proc.poll() is None:
-            return "paused" if self.paused else "running"
+        if self.box86_proc is not None:
+            # asyncio.Process uses returncode
+            if hasattr(self.box86_proc, "returncode") and self.box86_proc.returncode is None:
+                return "paused" if self.paused else "running"
+            # Fallback for standard Popen if used
+            if hasattr(self.box86_proc, "poll") and self.box86_proc.poll() is None:
+                return "paused" if self.paused else "running"
         return "stopped"
 
 
 def _run_ip(*args: str) -> tuple[bool, str]:
     """Run `sudo /sbin/ip <args>`. Returns (success, stderr)."""
     try:
-        result = subprocess.run(["sudo", "/sbin/ip"] + list(args), capture_output=True, timeout=10)
+        # Filter out None values from args to satisfy type checker
+        valid_args = [a for a in args if a is not None]
+        result = subprocess.run(["sudo", "/sbin/ip"] + valid_args, capture_output=True, timeout=10)
         stderr = result.stderr.decode(errors="replace").strip()
         if result.returncode != 0:
-            log.warning("ip %s failed (rc=%d): %s", " ".join(args), result.returncode, stderr)
+            log.warning("ip %s failed (rc=%d): %s", " ".join(valid_args), result.returncode, stderr)
         return result.returncode == 0, stderr
     except Exception as e:
         log.warning("ip command exception: %s", e)
@@ -164,11 +173,13 @@ def _teardown_network(vm_id: int, group_id: int, remaining_group_vms: list, tap_
 
     # Delete the actual kernel TAP device if we know its name; also try the
     # 86Box bridge name in case _attach_tap_to_bridge never ran (e.g. crash).
-    for dev in filter(None, [tap_dev, _tap_name(vm_id)]):
-        ok, _ = _run_ip("link", "delete", dev)
-        if ok:
-            log.info("Network: destroyed device %s (VM %d)", dev, vm_id)
-            break
+    devices_to_clean = [tap_dev, _tap_name(vm_id)]
+    for dev in devices_to_clean:
+        if dev:
+            ok, _ = _run_ip("link", "delete", dev)
+            if ok:
+                log.info("Network: destroyed device %s (VM %d)", dev, vm_id)
+                break
 
     if not remaining_group_vms:
         ok, _ = _run_ip("link", "delete", bridge)
@@ -196,12 +207,14 @@ def _inject_cfg_options(cfg_path: str, overrides: dict):
 
 class VMProcessManager:
     _instance: Optional["VMProcessManager"] = None
+    _vms: Dict[int, VMProcesses] = {}
+    _slots: Set[int] = set()
 
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls._instance._vms: Dict[int, VMProcesses] = {}
-            cls._instance._slots: set = set()
+            cls._instance._vms = {}
+            cls._instance._slots = set()
         return cls._instance
 
     def _alloc_slot(self) -> int:
@@ -317,7 +330,7 @@ class VMProcessManager:
                     pass
                 raise RuntimeError(
                     f"PulseAudio socket not created at {pulse_socket} "
-                    f"(exit={procs.pulse_proc.poll()}). Log:\n{pa_log_content}"
+                    f"(exit={procs.pulse_proc.poll() if procs.pulse_proc else 'N/A'}). Log:\n{pa_log_content}"
                 )
             log.info("PulseAudio ready for VM %d (socket %s)", vm_id, pulse_socket)
 
@@ -423,20 +436,35 @@ class VMProcessManager:
                 vm_log_file.flush()
             except Exception as e:
                 log.warning("Could not open log file %s: %s", log_file_path, e)
-                vm_log_file = subprocess.DEVNULL
+                vm_log_file = None
 
             log.info("86Box cmd: %s", " ".join(box86_cmd))
-            procs.box86_proc = subprocess.Popen(
-                box86_cmd,
-                env=box86_env,
-                stdout=vm_log_file,
-                stderr=vm_log_file,
-                cwd=vm_dir,
-                preexec_fn=os.setpgrp,  # own process group so killpg/SIGSTOP covers AppImage children
-            )
+            try:
+                # Use asyncio for non-blocking log streaming with timestamps
+                procs.box86_proc = await asyncio.create_subprocess_exec(
+                    *box86_cmd,
+                    env=box86_env,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    cwd=vm_dir,
+                    preexec_fn=os.setpgrp,
+                )
+                procs.log_file = vm_log_file
+            except Exception as e:
+                # If we fail to start the process, make sure we close the log file
+                if vm_log_file and hasattr(vm_log_file, 'close'):
+                    vm_log_file.close()
+                raise e
+
+            if vm_log_file:
+                # Start background logging tasks
+                asyncio.create_task(_log_stream(procs.box86_proc.stdout, vm_log_file))
+                asyncio.create_task(_log_stream(procs.box86_proc.stderr, vm_log_file, prefix="[ERR] "))
+            
             await asyncio.sleep(2.0)
 
-            if procs.box86_proc.poll() is not None:
+            # Check if process is still running
+            if procs.box86_proc.returncode is not None:
                 raise RuntimeError(f"86Box exited immediately (check {log_file_path} for details)")
 
             self._vms[vm_id] = procs
@@ -492,16 +520,27 @@ class VMProcessManager:
             return {"error": "VM not running"}
 
         log.info("Resetting VM %d (restarting 86Box)", vm_id)
+        
+        proc = procs.box86_proc
+        is_running = False
+        if hasattr(proc, 'returncode'):
+            is_running = proc.returncode is None
+        elif hasattr(proc, 'poll'):
+            is_running = proc.poll() is None
 
-        if procs.box86_proc.poll() is None:
+        if is_running:
             try:
-                procs.box86_proc.terminate()
+                proc.terminate()
             except Exception:
                 pass
-            await asyncio.sleep(1.0)
-            if procs.box86_proc.poll() is None:
+            # Wait a bit or kill
+            for _ in range(10):
+                if proc.returncode is not None:
+                    break
+                await asyncio.sleep(0.1)
+            if proc.returncode is None:
                 try:
-                    procs.box86_proc.kill()
+                    proc.kill()
                 except Exception:
                     pass
 
@@ -522,17 +561,24 @@ class VMProcessManager:
             vm_log_file.flush()
         except Exception as e:
             log.warning("Could not open log file %s: %s", log_file_path, e)
-            vm_log_file = subprocess.DEVNULL
+            vm_log_file = None
 
         try:
-            procs.box86_proc = subprocess.Popen(
-                procs.box86_cmd,
+            procs.box86_proc = await asyncio.create_subprocess_exec(
+                *procs.box86_cmd,
                 env=env,
-                stdout=vm_log_file,
-                stderr=vm_log_file,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
                 cwd=procs.vm_dir,
                 preexec_fn=os.setpgrp,
             )
+            procs.log_file = vm_log_file
+            
+            if vm_log_file:
+                # Start background logging tasks
+                asyncio.create_task(_log_stream(procs.box86_proc.stdout, vm_log_file))
+                asyncio.create_task(_log_stream(procs.box86_proc.stderr, vm_log_file, prefix="[ERR] "))
+            
             procs.paused = False
             procs.started_at = time.time()
             log.info("VM %d reset complete", vm_id)
@@ -544,7 +590,16 @@ class VMProcessManager:
     async def pause_vm(self, vm_id: int) -> dict:
         """Toggle pause on 86Box using SIGSTOP/SIGCONT."""
         procs = self._vms.get(vm_id)
-        if not procs or not procs.box86_proc or procs.box86_proc.poll() is not None:
+        if not procs or not procs.box86_proc:
+            return {"error": "VM not running"}
+        
+        is_running = False
+        if hasattr(procs.box86_proc, 'returncode'):
+            is_running = procs.box86_proc.returncode is None
+        elif hasattr(procs.box86_proc, 'poll'):
+            is_running = procs.box86_proc.poll() is None
+            
+        if not is_running:
             return {"error": "VM not running"}
 
         pid = procs.box86_proc.pid
@@ -564,30 +619,61 @@ class VMProcessManager:
         except Exception as e:
             return {"error": str(e)}
 
-    async def _kill_procs(self, procs: VMProcesses):
+    async def _kill_procs(self, procs: Optional[VMProcesses]):
+        if not procs:
+            return
+            
         # Kill in reverse startup order.
         # 86Box runs in its own process group (preexec_fn=os.setpgrp) so we use
         # killpg to also terminate AppImage child processes.
-        if procs.box86_proc and procs.box86_proc.poll() is None:
-            try:
-                # Resume first if paused — a SIGSTOP'd process group won't respond to SIGTERM
-                if procs.paused:
-                    os.killpg(procs.box86_proc.pid, signal.SIGCONT)
-                os.killpg(procs.box86_proc.pid, signal.SIGTERM)
-            except Exception:
-                pass
+        if procs.box86_proc:
+            is_running = False
+            if hasattr(procs.box86_proc, 'returncode'):
+                is_running = procs.box86_proc.returncode is None
+            elif hasattr(procs.box86_proc, 'poll'):
+                is_running = procs.box86_proc.poll() is None
+            
+            if is_running:
+                try:
+                    # Resume first if paused — a SIGSTOP'd process group won't respond to SIGTERM
+                    if procs.paused:
+                        os.killpg(procs.box86_proc.pid, signal.SIGCONT)
+                    os.killpg(procs.box86_proc.pid, signal.SIGTERM)
+                except Exception:
+                    pass
+
+        # Also kill vnc and pulse (these are normal subprocess.Popen)
         for proc in [procs.vnc_proc, procs.pulse_proc]:
             if proc and proc.poll() is None:
                 try:
                     proc.terminate()
                 except Exception:
                     pass
-        await asyncio.sleep(1.0)
-        if procs.box86_proc and procs.box86_proc.poll() is None:
+        
+        # Close the VM log file handle
+        if procs.log_file:
             try:
-                os.killpg(procs.box86_proc.pid, signal.SIGKILL)
+                procs.log_file.close()
             except Exception:
                 pass
+        procs.log_file = None
+
+        await asyncio.sleep(1.0)
+
+        # Force kill if still alive
+        if procs.box86_proc:
+            is_running = False
+            if hasattr(procs.box86_proc, 'returncode'):
+                is_running = procs.box86_proc.returncode is None
+            elif hasattr(procs.box86_proc, 'poll'):
+                is_running = procs.box86_proc.poll() is None
+                
+            if is_running:
+                try:
+                    os.killpg(procs.box86_proc.pid, signal.SIGKILL)
+                except Exception:
+                    pass
+
         for proc in [procs.vnc_proc, procs.pulse_proc]:
             if proc and proc.poll() is None:
                 try:
@@ -645,3 +731,24 @@ class VMProcessManager:
             }
             for p in self._vms.values()
         ]
+
+
+async def _log_stream(stream: asyncio.StreamReader, log_file, prefix=""):
+    """Read from an async stream and write to a file with timestamps."""
+    if not log_file or not hasattr(log_file, 'write'):
+        return
+    while True:
+        try:
+            line = await stream.readline()
+            if not line:
+                break
+            ts = time.strftime("[%Y-%m-%d %H:%M:%S] ")
+            # Decode with 'replace' to safely handle binary junk in 86Box output
+            log_file.write(f"{ts}{prefix}{line.decode(errors='replace')}")
+            log_file.flush()
+        except (ValueError, OSError, AttributeError):
+            break
+        except Exception as e:
+            # Log specific errors but don't crash the runner
+            logging.getLogger("Sphere86.vm_process").debug("Log stream error: %s", e)
+            break
