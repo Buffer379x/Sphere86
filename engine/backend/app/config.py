@@ -38,7 +38,9 @@ class Settings(BaseSettings):
     ldap_tls: bool = False
 
     # Runner
-    runner_url: str = "http://runner:8001"
+    # Runner is hosted in the same container as the backend (`engine`), listening on 8001.
+    # Using localhost makes this work regardless of Docker service names.
+    runner_url: str = "http://localhost:8001"
 
     # 86Box
     box86_version: str = ""
