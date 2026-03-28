@@ -443,6 +443,10 @@ class VMProcessManager:
             box86_env["XDG_CONFIG_HOME"] = "/tmp/86box-global"
             box86_env["HOME"] = "/tmp/86box-global"
             box86_env["XDG_RUNTIME_DIR"] = runtime_dir
+            # Avoid GameMode auto-hook in container: without a D-Bus session it
+            # only adds noisy dbus-launch errors to VM logs.
+            box86_env["GAMEMODEAUTO"] = "0"
+            box86_env["DBUS_SESSION_BUS_ADDRESS"] = "disabled:"
             # Extract-and-run avoids the AppImage FUSE mount, which would otherwise
             # fork a second "86Box" process as mount keeper. Single process = clean
             # SIGSTOP/SIGCONT for pause and simpler process group management.
@@ -580,6 +584,10 @@ class VMProcessManager:
         os.makedirs(runtime_dir, exist_ok=True)
         os.chmod(runtime_dir, 0o700)
         env["XDG_RUNTIME_DIR"] = runtime_dir
+        # Keep reset behavior consistent with start: disable GameMode auto-hook
+        # to avoid dbus-launch noise in container logs.
+        env["GAMEMODEAUTO"] = "0"
+        env["DBUS_SESSION_BUS_ADDRESS"] = "disabled:"
 
         log_key = procs.vm_uuid if procs.vm_uuid else str(vm_id)
         log_file_path = os.path.join(settings.log_dir, f"vm_{log_key}.log")
