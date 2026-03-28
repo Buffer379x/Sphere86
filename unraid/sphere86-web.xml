@@ -3,21 +3,19 @@
   <Name>Sphere86-Web</Name>
   <Repository>soupboss99/sphere86:web-latest</Repository>
   <Registry>https://hub.docker.com/r/soupboss99/sphere86</Registry>
-  <Network>custom:sphere86</Network>
+  <Network>bridge</Network>
   <MyIP/>
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
   <Support>https://github.com/Buffer379x/Sphere86/issues</Support>
   <Project>https://github.com/Buffer379x/Sphere86</Project>
-  <Overview>Sphere86 **Web**: Nginx mit React-Frontend, Proxy zur Engine (API :8000, Runner :8001). **Nach** dem Container **Sphere86-Engine** starten.&#xD;
+  <Overview>Sphere86 **Web**: Nginx + Frontend, Proxy zur Engine (:8000 / :8001). **Zuerst Sphere86-Engine starten**, dann diesen Container.&#xD;
 &#xD;
-**ENGINE_HOST:** Standard `engine` (Docker-DNS). Stattdessen eine **IP** oder einen anderen **Hostnamen** eintragen, wenn kein gemeinsames Netzwerk / kein Alias genutzt wird — muss vom Web-Container aus erreichbar sein.&#xD;
+**Keine Host-Dateien nötig:** Nginx-Konfiguration ist **im Image**; kein Kopieren von Config/Templates. **HTTPS:** optional später einen Pfad auf `/etc/nginx/certs` (ro) mit `fullchain.pem` + `privkey.pem` ergänzen und `SERVER_NAME` setzen — siehe [README](https://github.com/Buffer379x/Sphere86#environment-variables).&#xD;
 &#xD;
-**Nginx:** Konfiguration ist **im Image**; kein manuelles Kopieren.&#xD;
+**Netzwerk:** **Bridge** + `--link Sphere86-Engine:engine` (Extra Parameters): `ENGINE_HOST=engine` (Standard). **Alternative:** `ENGINE_HOST` auf die **Docker-IP** des Containers `Sphere86-Engine` setzen (z. B. aus `docker inspect` oder Unraid Docker-Übersicht) — dann ist `--link` nicht nötig und kann entfernt werden. IPv6 in eckigen Klammern.&#xD;
 &#xD;
-**HTTPS (optional):** Host-Ordner für „SSL certs“ mit `fullchain.pem` und `privkey.pem` befüllen und `SERVER_NAME` setzen — siehe [README](https://github.com/Buffer379x/Sphere86#environment-variables). Ohne Zertifikate läuft die Oberfläche per HTTP.&#xD;
-&#xD;
-**Netzwerk:** Beliebiges gemeinsames Bridge-Netz oder z. B. `ENGINE_HOST` = LAN-IP der Engine — siehe README.&#xD;
+**Hinweis:** PUID/PGID werden vom offiziellen Nginx-Image hier **nicht** ausgewertet; Relevant sind die Engine-PUID/PGID für Daten unter `/data`.&#xD;
 &#xD;
 **Alternative Registry (GHCR):** `ghcr.io/buffer379x/sphere86-web:latest`&#xD;
 &#xD;
@@ -26,7 +24,7 @@ Web-UI-Port unten ggf. auf Host-Port **80** ändern, falls nichts anderes darauf
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/Buffer379x/Sphere86/main/unraid/sphere86-web.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/Buffer379x/Sphere86/main/docs/logo/logo.png</Icon>
-  <ExtraParams>--restart=unless-stopped</ExtraParams>
+  <ExtraParams>--link Sphere86-Engine:engine --restart=unless-stopped</ExtraParams>
   <PostArgs/>
   <CPUset/>
   <DateInstalled>1743120000</DateInstalled>
@@ -34,15 +32,11 @@ Web-UI-Port unten ggf. auf Host-Port **80** ändern, falls nichts anderes darauf
   <DonateLink/>
   <Requires>Sphere86-Engine</Requires>
   <Config Name="HTTP Web UI" Target="80" Default="8080" Mode="tcp" Description="Host-Port (Standard 8080) wird auf Container-Port 80 gemappt." Type="Port" Display="always" Required="true" Mask="false">8080</Config>
-  <Config Name="PUID" Target="PUID" Default="1000" Mode="" Description="Mit Engine abgleichen." Type="Variable" Display="always" Required="false" Mask="false">1000</Config>
-  <Config Name="PGID" Target="PGID" Default="1000" Mode="" Description="Mit Engine abgleichen." Type="Variable" Display="always" Required="false" Mask="false">1000</Config>
   <Config Name="Timezone" Target="TZ" Default="Europe/Berlin" Mode="" Description="" Type="Variable" Display="always" Required="false" Mask="false">Europe/Berlin</Config>
   <Config Name="server_name (nginx)" Target="SERVER_NAME" Default="_" Mode="" Description="Catch-all `_` oder FQDN bei HTTPS mit echten Zertifikaten." Type="Variable" Display="always" Required="false" Mask="false">_</Config>
-  <Config Name="Engine upstream host" Target="ENGINE_HOST" Default="engine" Mode="" Description="API/Runner-Ziel: `engine`, anderer Hostname oder IP (IPv6 in eckigen Klammern)." Type="Variable" Display="always" Required="false" Mask="false">engine</Config>
-  <Config Name="CERTS_DIR" Target="CERTS_DIR" Default="/etc/nginx/certs" Mode="" Description="Pfad im Container für TLS-Dateien; optional Host-Ordner mounten." Type="Variable" Display="advanced" Required="false" Mask="false">/etc/nginx/certs</Config>
-  <Config Name="SSL certs (optional)" Target="/etc/nginx/certs" Default="/mnt/user/appdata/sphere86/config/nginx/certs" Mode="ro" Description="Optional: fullchain.pem + privkey.pem für HTTPS. Leer lassen = nur HTTP." Type="Path" Display="advanced" Required="false" Mask="false">/mnt/user/appdata/sphere86/config/nginx/certs</Config>
+  <Config Name="Engine upstream host" Target="ENGINE_HOST" Default="engine" Mode="" Description="Ziel für API :8000 und Runner :8001. Mit `--link`: `engine`. Ohne Link: Docker-Bridge-IP von Sphere86-Engine (inspect/Unraid), dann `--link` in Extra Parameters entfernen. IPv6 in `[ ]`." Type="Variable" Display="always" Required="false" Mask="false">engine</Config>
   <Changes>### 2026-03-28
-- `ENGINE_HOST` für Upstream (Hostname oder IP)&#xD;
-- Nginx-Konfiguration im Image; keine manuellen conf/template-Mounts mehr&#xD;
+- `ENGINE_HOST`: Hostname `engine` oder Docker-IP; `ENGINE_HOST`-Doku&#xD;
+- Bridge + `--link`; Nginx im Image&#xD;
 - Erstes Unraid-Template (Web) für Docker Hub `soupboss99/sphere86:web-latest`</Changes>
 </Container>

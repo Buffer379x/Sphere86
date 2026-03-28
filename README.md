@@ -203,6 +203,17 @@ docker compose up -d
 
 86Box binaries/ROMs are updated automatically on container start (or manually in the Settings UI).
 
+## Unraid (templates in `unraid/`)
+
+Community Application templates target the published images (`soupboss99/sphere86:engine-latest` and `:web-latest`). Out of the box:
+
+- **No copying config from the repo into host paths**: the **web** image embeds nginx + templates; **engine** maps **`/data`** and **`/library`** under e.g. **`/mnt/user/appdata/sphere86/`** (persistent across image updates).
+- **Networking**: templates use Docker **bridge** and **`--link Sphere86-Engine:engine`** on the web container so **`ENGINE_HOST=engine`** works. Start **engine** before **web**. Alternatively set **`ENGINE_HOST`** to the **engine container’s Docker IP** (from `docker inspect` or Unraid’s Docker view) and remove **`--link`** from the web container’s extra parameters.
+- **Permissions**: engine defaults to **PUID 99** / **PGID 100** (typical Unraid *nobody* / *users*). The entrypoint creates `/data` subtrees and adjusts ownership; align with your share if you use different IDs.
+- **Secrets**: change **`APP_SECRET_KEY`** and **`ADMIN_PASSWORD`** after the first successful login.
+- **HTTPS (optional)**: add a host path on **`/etc/nginx/certs`** on the web container (`fullchain.pem` + `privkey.pem`).
+- **`/dev/net/tun`** and **`/dev/dri`**: included in the template but **optional**; remove either mapping if the device node is missing on your host.
+
 ## Troubleshooting
 
 - **`web` shows “Server unreachable”**:

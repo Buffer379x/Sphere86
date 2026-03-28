@@ -101,6 +101,9 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# Optional read-only host mount can replace this; without a mount the path still exists.
+RUN mkdir -p /library
+
 EXPOSE 8000 8001
 
 ENTRYPOINT ["/entrypoint.sh"]

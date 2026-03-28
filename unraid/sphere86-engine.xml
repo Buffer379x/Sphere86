@@ -3,17 +3,19 @@
   <Name>Sphere86-Engine</Name>
   <Repository>soupboss99/sphere86:engine-latest</Repository>
   <Registry>https://hub.docker.com/r/soupboss99/sphere86</Registry>
-  <Network>custom:sphere86</Network>
+  <Network>bridge</Network>
   <MyIP/>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
   <Support>https://github.com/Buffer379x/Sphere86/issues</Support>
   <Project>https://github.com/Buffer379x/Sphere86</Project>
-  <Overview>Sphere86 **Engine**: FastAPI-Backend, Runner (86Box, VNC, Audio). Zusammen mit dem Template **Sphere86-Web** nutzen — zuerst Engine starten.&#xD;
+  <Overview>Sphere86 **Engine**: FastAPI-Backend, Runner (86Box, VNC, Audio). Zusammen mit **Sphere86-Web** — **zuerst Engine starten**, dann Web.&#xD;
 &#xD;
-**Netzwerk:** Vor der Installation ein Docker-Bridgenetzwerk namens `sphere86` anlegen (Docker → Networks → Add Network → Bridge → Name `sphere86`). Beide Container müssen diesem Netzwerk beitreten.&#xD;
+**Netzwerk:** Standard **Bridge**; der Web-Container nutzt `--link` auf diesen Container, damit der Upstream-Name `engine` ohne eigenes Docker-Netz funktioniert.&#xD;
 &#xD;
-Der Nginx-Container erreicht den Engine-Container unter dem Hostnamen `engine` (wird per `--network-alias engine` gesetzt).&#xD;
+**Rechte:** Standard **PUID 99 / PGID 100** (Unraid „nobody“ / „users“). Host-Ordner unter `/data` werden beim Start im Container angepasst.&#xD;
+&#xD;
+**Medienbibliothek:** Persistenter Host-Ordner **`…/appdata/sphere86/library`** → `/library` (ro); bleibt bei Image-Updates erhalten.&#xD;
 &#xD;
 **Alternative Registry (GHCR):** `ghcr.io/buffer379x/sphere86-engine:latest`&#xD;
 &#xD;
@@ -22,16 +24,16 @@ Details: [README](https://github.com/Buffer379x/Sphere86), [Quickstart](https://
   <WebUI/>
   <TemplateURL>https://raw.githubusercontent.com/Buffer379x/Sphere86/main/unraid/sphere86-engine.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/Buffer379x/Sphere86/main/docs/logo/logo.png</Icon>
-  <ExtraParams>--platform linux/amd64 --shm-size=256m --cap-add=SYS_PTRACE --cap-add=NET_ADMIN --cap-add=NET_RAW --network-alias engine --restart=unless-stopped</ExtraParams>
+  <ExtraParams>--platform linux/amd64 --shm-size=256m --cap-add=SYS_PTRACE --cap-add=NET_ADMIN --cap-add=NET_RAW --restart=unless-stopped</ExtraParams>
   <PostArgs/>
   <CPUset/>
   <DateInstalled>1743120000</DateInstalled>
   <DonateText/>
   <DonateLink/>
   <Requires/>
-  <Config Name="App secret (JWT)" Target="APP_SECRET_KEY" Default="" Mode="" Description="Langer zufälliger Wert; bei Änderung werden bestehende Sessions ungültig." Type="Variable" Display="always" Required="true" Mask="true"></Config>
-  <Config Name="PUID" Target="PUID" Default="1000" Mode="" Description="Dateibesitzer für /data; bei Unraid ggf. 99 (nobody) verwenden." Type="Variable" Display="always" Required="true" Mask="false">1000</Config>
-  <Config Name="PGID" Target="PGID" Default="1000" Mode="" Description="Gruppe für /data; bei Unraid ggf. 100 (users)." Type="Variable" Display="always" Required="true" Mask="false">1000</Config>
+  <Config Name="App secret (JWT)" Target="APP_SECRET_KEY" Default="changeme_secret" Mode="" Description="Für produktiven Betrieb durch einen langen Zufallswert ersetzen (Sessions sonst vorhersehbar)." Type="Variable" Display="always" Required="false" Mask="true">changeme_secret</Config>
+  <Config Name="PUID" Target="PUID" Default="99" Mode="" Description="Unraid-typisch: 99 (nobody). Muss zu Besitz des Host-Appdata-Ordners passen." Type="Variable" Display="always" Required="true" Mask="false">99</Config>
+  <Config Name="PGID" Target="PGID" Default="100" Mode="" Description="Unraid-typisch: 100 (users)." Type="Variable" Display="always" Required="true" Mask="false">100</Config>
   <Config Name="Timezone" Target="TZ" Default="Europe/Berlin" Mode="" Description="" Type="Variable" Display="always" Required="false" Mask="false">Europe/Berlin</Config>
   <Config Name="User management" Target="USER_MANAGEMENT" Default="true" Mode="" Description="true = Login; false = offenes UI ohne Auth." Type="Variable" Display="always" Required="true" Mask="false">true</Config>
   <Config Name="Admin username (first boot)" Target="ADMIN_USERNAME" Default="admin" Mode="" Description="Nur wenn USER_MANAGEMENT=true und DB neu." Type="Variable" Display="always" Required="false" Mask="false">admin</Config>
@@ -61,10 +63,12 @@ Details: [README](https://github.com/Buffer379x/Sphere86), [Quickstart](https://
   <Config Name="Active VM limit" Target="ACTIVE_VM_LIMIT" Default="5" Mode="" Description="Maximal gleichzeitig laufende VMs." Type="Variable" Display="always" Required="false" Mask="false">5</Config>
   <Config Name="VM auto-shutdown minutes" Target="VM_AUTO_SHUTDOWN_MINUTES" Default="0" Mode="" Description="0 = deaktiviert." Type="Variable" Display="advanced" Required="false" Mask="false">0</Config>
   <Config Name="Log level" Target="LOG_LEVEL" Default="info" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false">info</Config>
-  <Config Name="Data directory" Target="/data" Default="/mnt/user/appdata/sphere86/data" Mode="rw" Description="Persistente Daten (DB, VMs, ROMs, Cache)." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/sphere86/data</Config>
-  <Config Name="Shared image library (optional)" Target="/library" Default="/mnt/user/appdata/sphere86/library" Mode="ro" Description="Optional; read-only Medienbibliothek." Type="Path" Display="advanced" Required="false" Mask="false">/mnt/user/appdata/sphere86/library</Config>
-  <Config Name="/dev/net/tun" Target="/dev/net/tun" Default="/dev/net/tun" Mode="rw" Description="Für TAP/Bridge-Networking zwischen VMs." Type="Device" Display="always" Required="true" Mask="false">/dev/net/tun</Config>
-  <Config Name="/dev/dri (optional GPU)" Target="/dev/dri" Default="/dev/dri" Mode="rw" Description="Optional: DRI/GPU; entfernen wenn nicht vorhanden." Type="Device" Display="advanced" Required="false" Mask="false">/dev/dri</Config>
+  <Config Name="Data directory" Target="/data" Default="/mnt/user/appdata/sphere86/data" Mode="rw" Description="Persistente Daten (DB, VMs, ROMs, Cache). Unraid legt den Pfad bei Bedarf an." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/sphere86/data</Config>
+  <Config Name="Shared image library" Target="/library" Default="/mnt/user/appdata/sphere86/library" Mode="ro" Description="Persistente Medienbibliothek (read-only im Container); bleibt bei Updates erhalten." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/sphere86/library</Config>
+  <Config Name="/dev/net/tun" Target="/dev/net/tun" Default="/dev/net/tun" Mode="rw" Description="Für TAP/VM-Gruppen-Netzwerk empfohlen. Zuweisung entfernen, falls das Gerät auf dem Host fehlt." Type="Device" Display="always" Required="false" Mask="false">/dev/net/tun</Config>
+  <Config Name="/dev/dri (GPU)" Target="/dev/dri" Default="/dev/dri" Mode="rw" Description="Optional: GPU/DRI; Zuweisung entfernen, wenn `/dev/dri` nicht existiert." Type="Device" Display="always" Required="false" Mask="false">/dev/dri</Config>
   <Changes>### 2026-03-28
+- Appdata-`/library` gemappt; `/dev/net/tun` und `/dev/dri` optional&#xD;
+- Bridge + Web-`--link`; PUID/PGID 99/100; APP_SECRET_KEY-Default&#xD;
 - Erstes Unraid-Template (Engine) für Docker Hub `soupboss99/sphere86:engine-latest`</Changes>
 </Container>

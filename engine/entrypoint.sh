@@ -26,6 +26,9 @@ for dir in $DATA_DIRS; do
     chown "$PUID:$PGID" "$dir"
 done
 
+mkdir -p /library
+chown "$PUID:$PGID" /library 2>/dev/null || true
+
 # Fix ownership of /app
 chown -R "$PUID:$PGID" /app
 
