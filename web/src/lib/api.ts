@@ -297,6 +297,7 @@ export function defaultConfig(): VMConfig {
     pit_mode: 0,
     time_sync: 'local',
     gfxcard: 'cga',
+    vid_renderer: 'qt_software',
     voodoo_enabled: false,
     voodoo_type: 'voodoo1',
     show_second_monitors: false,

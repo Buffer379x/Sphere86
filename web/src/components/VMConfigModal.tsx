@@ -940,6 +940,17 @@ export default function VMConfigModal({ vmId, initialConfig, initialName = '', i
                             onChange={(k, v) => setDeviceSettings(cfg.gfxcard, k, v)}
                           />
                         </Field>
+                        <Field label="Renderer" hint="2D/3D backend used by 86Box UI">
+                          <select
+                            className="input"
+                            value={cfg.vid_renderer ?? 'qt_software'}
+                            onChange={e => set('vid_renderer', e.target.value)}
+                          >
+                            <option value="qt_software">Software</option>
+                            <option value="qt_opengl">OpenGL</option>
+                            <option value="qt_vulkan">Vulkan</option>
+                          </select>
+                        </Field>
                         <Field label="Secondary Monitors" hint="Show dual monitor support">
                           <Toggle disabled={readOnly} value={cfg.show_second_monitors} onChange={v => set('show_second_monitors', v)} />
                         </Field>

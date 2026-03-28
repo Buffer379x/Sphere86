@@ -46,6 +46,7 @@ export interface VMConfig {
 
   // Display
   gfxcard: string
+  vid_renderer: string
   voodoo_enabled: boolean
   voodoo_type: string
   show_second_monitors: boolean

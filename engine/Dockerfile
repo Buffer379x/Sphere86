@@ -28,6 +28,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxkbcommon0 \
     libxkbcommon-x11-0 \
     libdbus-1-3 \
+    libvulkan1 \
+    mesa-vulkan-drivers \
+    libpipewire-0.3-0 \
+    gamemode \
     libasound2 \
     libpulse0 \
     libopenal1 \

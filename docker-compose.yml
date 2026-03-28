@@ -113,9 +113,9 @@ services:
       - "8000"
       - "8001"
       - "6900-6949"
-    # devices:
-    #   - /dev/dri:/dev/dri
-    #   - /dev/net/tun:/dev/net/tun
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/net/tun:/dev/net/tun
     shm_size: '256mb'
     cap_add:
       - SYS_PTRACE

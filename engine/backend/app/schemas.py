@@ -111,6 +111,7 @@ class VMConfig(BaseModel):
 
     # ── Display ────────────────────────────────────────────────────────────────
     gfxcard: str = "cga"
+    vid_renderer: str = "qt_software"  # qt_software | qt_opengl | qt_vulkan
     voodoo_enabled: bool = False
     voodoo_type: str = "voodoo1"
     show_second_monitors: bool = False

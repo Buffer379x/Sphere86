@@ -354,6 +354,10 @@ class VMProcessManager:
             env["APPIMAGE_EXTRACT_AND_RUN"] = "1"
             env["PULSE_RUNTIME_PATH"] = pulse_runtime
             env["PULSE_SERVER"] = f"unix:{pulse_socket}"
+            runtime_dir = "/tmp/runtime-appSphere86"
+            os.makedirs(runtime_dir, exist_ok=True)
+            os.chmod(runtime_dir, 0o700)
+            env["XDG_RUNTIME_DIR"] = runtime_dir
 
             # ── 3. Start Xtigervnc (TigerVNC) ────────────────────────────────
             # Xtigervnc is both the X server and the VNC server in one process.
@@ -437,6 +441,8 @@ class VMProcessManager:
             # Point Qt's AppConfigLocation to a writable /tmp path so 86Box reads
             # 86box_global.cfg from /tmp/86box-global/86Box/ (written at runner startup).
             box86_env["XDG_CONFIG_HOME"] = "/tmp/86box-global"
+            box86_env["HOME"] = "/tmp/86box-global"
+            box86_env["XDG_RUNTIME_DIR"] = runtime_dir
             # Extract-and-run avoids the AppImage FUSE mount, which would otherwise
             # fork a second "86Box" process as mount keeper. Single process = clean
             # SIGSTOP/SIGCONT for pause and simpler process group management.
@@ -568,6 +574,12 @@ class VMProcessManager:
         env["PULSE_SERVER"] = f"unix:{procs.pulse_runtime}/native"
         env["SDL_AUDIODRIVER"] = "pulse"
         env["PULSE_SINK"] = "box86_sink"
+        env["XDG_CONFIG_HOME"] = "/tmp/86box-global"
+        env["HOME"] = "/tmp/86box-global"
+        runtime_dir = "/tmp/runtime-appSphere86"
+        os.makedirs(runtime_dir, exist_ok=True)
+        os.chmod(runtime_dir, 0o700)
+        env["XDG_RUNTIME_DIR"] = runtime_dir
 
         log_key = procs.vm_uuid if procs.vm_uuid else str(vm_id)
         log_file_path = os.path.join(settings.log_dir, f"vm_{log_key}.log")

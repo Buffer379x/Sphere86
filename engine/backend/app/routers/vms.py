@@ -577,6 +577,13 @@ def _write_86box_config(vm: VM, vm_dir: str, config_override: dict | None = None
             return str(int(v))
         return str(v)
 
+    # ── [General] ──────────────────────────────────────────────────────────────
+    section("General")
+    renderer = cfg.get("vid_renderer", "qt_software")
+    if renderer not in {"qt_software", "qt_opengl", "qt_vulkan"}:
+        renderer = "qt_software"
+    opt("vid_renderer", renderer)
+
     # ── [Machine] ──────────────────────────────────────────────────────────────
     section("Machine")
     machine_id = cfg.get("machine", "ibmxt")
