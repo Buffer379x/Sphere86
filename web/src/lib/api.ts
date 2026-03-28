@@ -252,11 +252,13 @@ export const libraryApi = {
     })
   },
 
-  deleteImage: (relPath: string) =>
-    request<void>(
-      `/library/images/${relPath.split('/').map(encodeURIComponent).join('/')}`,
+  deleteImage: (relPath: string, options?: { recursive?: boolean }) => {
+    const q = options?.recursive ? '?recursive=true' : ''
+    return request<void>(
+      `/library/images/${relPath.split('/').map(encodeURIComponent).join('/')}${q}`,
       { method: 'DELETE' },
-    ),
+    )
+  },
 
   moveImage: (src: string, dst: string) =>
     request<{ src: string; dst: string }>('/library/images/move', {

@@ -1,6 +1,7 @@
 """Image Library — external read-only library + per-user custom images management."""
 import os
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+import shutil
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -159,16 +160,20 @@ async def upload_image(
 @router.delete("/images/{rel_path:path}", status_code=204)
 async def delete_image(
     rel_path: str,
+    recursive: bool = Query(False, description="If true, delete non-empty directories recursively"),
     current_user: User = Depends(get_current_user),
 ):
     images_dir = _user_images_dir(current_user)
     full = _safe_path(images_dir, rel_path)
 
     if os.path.isdir(full):
-        try:
-            os.rmdir(full)
-        except OSError:
-            raise HTTPException(409, "Directory is not empty")
+        if recursive:
+            shutil.rmtree(full)
+        else:
+            try:
+                os.rmdir(full)
+            except OSError:
+                raise HTTPException(409, "Directory is not empty")
     elif os.path.isfile(full):
         os.remove(full)
     else:

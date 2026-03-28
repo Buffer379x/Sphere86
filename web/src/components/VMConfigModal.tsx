@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef, useMemo, createContext, useContext } from 'react'
+import { useState, useEffect, useMemo, createContext, useContext } from 'react'
 import { createPortal } from 'react-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { X, ChevronRight, HardDrive, Monitor, Volume2, Network, Cpu, Settings2, UsbIcon, Upload, Trash2, Disc, Save, FolderOpen, Plus, CloudOff, ServerCog } from 'lucide-react'
+import { X, ChevronRight, HardDrive, Monitor, Volume2, Network, Cpu, Settings2, UsbIcon, Disc, Save, FolderOpen, Plus, CloudOff, ServerCog } from 'lucide-react'
 import { VMConfig, HardwareLists, HardwareOption } from '../types'
-import { systemApi, mediaApi, userApi, defaultConfig, formatBytes } from '../lib/api'
+import { systemApi, userApi, defaultConfig } from '../lib/api'
 import { useStore } from '../store/useStore'
 import { withBusGroups } from '../lib/busGroups'
 import { clsx } from 'clsx'
@@ -302,12 +302,8 @@ export default function VMConfigModal({ vmId, initialConfig, initialName = '', i
   const { currentUser } = useStore()
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  const [uploading, setUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
-  const uploadAbortRef = useRef<AbortController | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const [imagePicker, setImagePicker] = useState<{ key: string; kind: 'floppy' | 'cdrom' } | null>(null)
-  const { serverOnline, setActiveUpload, updateUploadProgress } = useStore()
+  const { serverOnline } = useStore()
   const { data: users = [] } = useQuery({
     queryKey: ['users'],
     queryFn: userApi.list,
@@ -325,50 +321,8 @@ export default function VMConfigModal({ vmId, initialConfig, initialName = '', i
     }
     return Object.entries(map) as [string, HardwareOption[]][]
   }, [hw])
-  const { data: mediaFiles = [] } = useQuery({
-    queryKey: ['media', vmId],
-    queryFn: () => mediaApi.list(vmId!),
-    enabled: !!vmId,
-  })
-
-  async function handleMediaUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file || !vmId) return
-    const controller = new AbortController()
-    uploadAbortRef.current = controller
-    setUploading(true)
-    setUploadProgress(0)
-    setActiveUpload({ filename: file.name, progress: 0, abort: () => controller.abort() })
-    try {
-      await mediaApi.upload(vmId, file, (pct) => { setUploadProgress(pct); updateUploadProgress(pct) }, controller.signal)
-      qc.invalidateQueries({ queryKey: ['media', vmId] })
-    } catch (e: any) {
-      if (e.name !== 'AbortError') console.error(e)
-    } finally {
-      setUploading(false)
-      setUploadProgress(null)
-      setActiveUpload(null)
-      uploadAbortRef.current = null
-      if (fileInputRef.current) fileInputRef.current.value = ''
-    }
-  }
-
   function handleClose() {
     onClose()
-  }
-
-  async function handleMediaDelete(filename: string) {
-    if (!vmId) return
-    await mediaApi.delete(vmId, filename)
-    qc.invalidateQueries({ queryKey: ['media', vmId] })
-    // Clear any config references to the deleted file
-    const driveKeys: (keyof VMConfig)[] = [
-      'fdd_01_fn', 'fdd_02_fn', 'fdd_03_fn', 'fdd_04_fn',
-      'cdrom_01_fn', 'cdrom_02_fn', 'cdrom_03_fn', 'cdrom_04_fn',
-    ]
-    for (const key of driveKeys) {
-      if ((cfg[key] as string)?.endsWith('/' + filename)) set(key, '' as any)
-    }
   }
 
   function set<K extends keyof VMConfig>(key: K, val: VMConfig[K]) {
@@ -1382,36 +1336,6 @@ export default function VMConfigModal({ vmId, initialConfig, initialName = '', i
                           )
                         })}
                       </FieldGroup>
-
-                      {vmId && (
-                        <FieldGroup label="Media Files">
-                          <div className="space-y-2">
-                            {mediaFiles.filter(f => /\.(img|ima|vfd|flp)$/i.test(f.name)).map(f => (
-                              <div key={f.name} className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                <span className="font-mono text-slate-700 dark:text-slate-300 truncate flex-1">{f.name}</span>
-                                <span className="text-xs text-slate-400 ml-3 flex-shrink-0">{formatBytes(f.size)}</span>
-                                <button onClick={() => handleMediaDelete(f.name)} className="ml-2 p-1 text-red-400 hover:text-red-600 flex-shrink-0">
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            ))}
-                            {mediaFiles.filter(f => /\.(img|ima|vfd|flp)$/i.test(f.name)).length === 0 && (
-                              <p className="text-xs text-slate-400 italic">No floppy images uploaded.</p>
-                            )}
-                            <div className="pt-1 space-y-2">
-                              <input ref={fileInputRef} type="file" className="hidden"
-                                accept=".001,.002,.003,.004,.005,.006,.007,.008,.009,.010,.12,.144,.360,.720,.86f,.bin,.cq,.cqm,.ddi,.dsk,.fdi,.fdf,.flp,.hdm,.ima,.imd,.img,.json,.mfm,.td0,.vfd,.xdf"
-                                onChange={handleMediaUpload} />
-                              <div className="flex items-center gap-3">
-                                <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="btn-secondary text-xs">
-                                  <Upload className="w-3.5 h-3.5" />
-                                  {uploading ? 'Uploading…' : 'Upload Floppy Image'}
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </FieldGroup>
-                      )}
                     </>
                   )}
 
@@ -1511,44 +1435,6 @@ export default function VMConfigModal({ vmId, initialConfig, initialName = '', i
                           )
                         })}
                       </FieldGroup>
-
-                      {vmId && (
-                        <FieldGroup label="ISO / Disc Images">
-                          <div className="space-y-2">
-                            {mediaFiles.filter(f => /\.(iso|bin|cue)$/i.test(f.name)).map(f => (
-                              <div key={f.name} className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                <span className="font-mono text-slate-700 dark:text-slate-300 truncate flex-1">{f.name}</span>
-                                <span className="text-xs text-slate-400 ml-3 flex-shrink-0">{formatBytes(f.size)}</span>
-                                <button onClick={() => handleMediaDelete(f.name)} className="ml-2 p-1 text-red-400 hover:text-red-600 flex-shrink-0">
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            ))}
-                            {mediaFiles.filter(f => /\.(iso|bin|cue)$/i.test(f.name)).length === 0 && (
-                              <p className="text-xs text-slate-400 italic">No ISO images uploaded.</p>
-                            )}
-                            <div className="pt-1 space-y-2">
-                              <input ref={fileInputRef} type="file" className="hidden"
-                                accept=".iso,.bin,.img,.cue,.mds,.mdx,.viso"
-                                onChange={handleMediaUpload} />
-                              <div className="flex items-center gap-3">
-                                <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="btn-secondary text-xs">
-                                  <Upload className="w-3.5 h-3.5" />
-                                  {uploading ? 'Uploading…' : 'Upload ISO Image'}
-                                </button>
-                                {uploading && uploadProgress !== null && (
-                                  <div className="flex items-center gap-1.5 text-slate-400">
-                                    <div className="w-24 h-1.5 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
-                                      <div className="h-full bg-blue-500 rounded-full transition-all duration-150" style={{ width: `${uploadProgress}%` }} />
-                                    </div>
-                                    <span className="text-xs tabular-nums">{uploadProgress}%</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </FieldGroup>
-                      )}
                     </>
                   )}
 

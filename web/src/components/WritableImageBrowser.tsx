@@ -10,6 +10,11 @@ import {
 } from 'lucide-react'
 import { libraryApi, formatBytes, LibraryNode } from '../lib/api'
 import { useStore } from '../store/useStore'
+import ConfirmDialog from './ConfirmDialog'
+
+function isNonEmptyDirectory(node: LibraryNode): boolean {
+  return node.type === 'directory' && (node.children?.length ?? 0) > 0
+}
 
 interface Props {
   dark?: boolean
@@ -49,6 +54,9 @@ export default function WritableImageBrowser({ dark = false }: Props) {
   const [newFolderInput, setNewFolderInput] = useState<string | null>(null)
   const newFolderRef = useRef<HTMLInputElement>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<
+    null | { stage: 'first'; relPath: string; node: LibraryNode } | { stage: 'second'; relPath: string }
+  >(null)
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<number | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
@@ -174,10 +182,10 @@ export default function WritableImageBrowser({ dark = false }: Props) {
     }
   }
 
-  async function handleDelete(relPath: string) {
+  async function runDelete(relPath: string, recursive: boolean) {
     setDeleting(relPath)
     try {
-      await libraryApi.deleteImage(relPath)
+      await libraryApi.deleteImage(relPath, recursive ? { recursive: true } : undefined)
       qc.invalidateQueries({ queryKey: ['user-images-tree'] })
       if (columnPath.join('/') === relPath || columnPath.join('/').startsWith(relPath + '/')) {
         setColumnPath(columnPath.slice(0, -1))
@@ -186,6 +194,7 @@ export default function WritableImageBrowser({ dark = false }: Props) {
       alert(e.message)
     } finally {
       setDeleting(null)
+      setDeleteConfirm(null)
     }
   }
 
@@ -500,9 +509,9 @@ export default function WritableImageBrowser({ dark = false }: Props) {
                       {/* Delete button */}
                       {!isRenaming && (
                         <button
-                          onClick={() => handleDelete(relPath)}
+                          onClick={() => setDeleteConfirm({ stage: 'first', relPath, node })}
                           disabled={!!deleting}
-                          title={node.type === 'directory' ? 'Delete folder (must be empty)' : 'Delete'}
+                          title={node.type === 'directory' ? 'Delete folder' : 'Delete'}
                           className={`opacity-0 group-hover:opacity-100 p-1 mr-1 rounded shrink-0 transition-all
                             ${isSelected ? 'hover:bg-blue-500 text-blue-200 hover:text-white' : `hover:text-red-400 ${d ? 'text-white/30' : 'text-slate-400'}`}
                             disabled:opacity-20`}
@@ -552,6 +561,33 @@ export default function WritableImageBrowser({ dark = false }: Props) {
           </div>
         )}
         </div>
+      )}
+
+      {deleteConfirm?.stage === 'first' && (
+        <ConfirmDialog
+          title="Delete?"
+          message={`Are you sure you want to delete "${deleteConfirm.node.name}"?`}
+          confirmLabel="Delete"
+          onConfirm={() => {
+            const c = deleteConfirm
+            if (c?.stage !== 'first') return
+            if (isNonEmptyDirectory(c.node)) {
+              setDeleteConfirm({ stage: 'second', relPath: c.relPath })
+            } else {
+              void runDelete(c.relPath, false)
+            }
+          }}
+          onCancel={() => setDeleteConfirm(null)}
+        />
+      )}
+      {deleteConfirm?.stage === 'second' && (
+        <ConfirmDialog
+          title="Delete folder?"
+          message="This folder is not empty. All files and subfolders inside will be permanently removed."
+          confirmLabel="Delete all"
+          onConfirm={() => void runDelete(deleteConfirm.relPath, true)}
+          onCancel={() => setDeleteConfirm(null)}
+        />
       )}
     </div>
   )

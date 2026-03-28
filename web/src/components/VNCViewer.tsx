@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
-import { Maximize2, RefreshCw, PowerOff, Play, Pause, AlertCircle, Monitor, Settings, FolderOpen, Volume2, VolumeX, Keyboard, CloudOff, Camera, ZoomIn, ZoomOut, Mouse, Eye, EyeOff } from 'lucide-react'
+import { Maximize2, RefreshCw, PowerOff, Play, Pause, AlertCircle, Monitor, Settings, Volume2, VolumeX, Keyboard, CloudOff, Camera, ZoomIn, ZoomOut, Mouse, Eye, EyeOff } from 'lucide-react'
 import { vmApi, systemApi } from '../lib/api'
 import { useStore } from '../store/useStore'
 import { VMConfig } from '../types'
 import VMConfigModal from './VMConfigModal'
-import ImagePickerModal from './ImagePickerModal'
 import ConfirmDialog from './ConfirmDialog'
 import { clsx } from 'clsx'
 
@@ -26,7 +25,6 @@ export default function VNCViewer({ vmId, vmName, isVisible = true }: Props) {
   const [loading, setLoading] = useState(true)
   const [muted, setMuted] = useState(false)  // start unmuted as requested
   const [showSettings, setShowSettings] = useState(false)
-  const [showMedia, setShowMedia] = useState(false)
   const [confirm, setConfirm] = useState<'poweroff' | null>(null)
   const { updateTabStatus, addToast, serverOnline } = useStore()
   const [busy, setBusy] = useState(false)
@@ -593,16 +591,6 @@ export default function VNCViewer({ vmId, vmName, isVisible = true }: Props) {
             )}
           </div>}
 
-          {/* Media */}
-          <button
-            onClick={() => setShowMedia(true)}
-            title="Media images"
-            className="btn-ghost text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-xs"
-          >
-            <FolderOpen className="w-3.5 h-3.5" />
-            Media
-          </button>
-
           <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-0.5" />
 
           {/* Running-only controls */}
@@ -776,13 +764,6 @@ export default function VNCViewer({ vmId, vmName, isVisible = true }: Props) {
           confirmClass="btn-danger"
           onConfirm={handlePowerOff}
           onCancel={() => setConfirm(null)}
-        />
-      )}
-
-      {showMedia && (
-        <ImagePickerModal
-          vmName={vmFull?.name ?? vmName}
-          onClose={() => setShowMedia(false)}
         />
       )}
 
