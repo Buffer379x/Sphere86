@@ -183,6 +183,23 @@ def _teardown_network(vm_id: int, group_id: int, remaining_group_vms: list, tap_
             log.info("Network: destroyed bridge %s (group %d, no remaining VMs)", bridge, group_id)
 
 
+def _strip_gamemode_from_env(env: dict) -> None:
+    """Remove GameMode shims from the environment. In a headless container there is
+    no session D-Bus; libgamemodeauto otherwise spawns dbus-launch and clutters VM logs."""
+    lp = env.get("LD_PRELOAD", "")
+    if lp:
+        parts = [p for p in lp.split(":") if p]
+        filtered = [p for p in parts if "gamemode" not in p.lower()]
+        if filtered:
+            env["LD_PRELOAD"] = ":".join(filtered)
+        else:
+            env.pop("LD_PRELOAD", None)
+    else:
+        env.pop("LD_PRELOAD", None)
+    env.pop("GAMEMODERUNEXEC", None)
+    env["GAMEMODEAUTO"] = "0"
+
+
 def _is_proc_alive(proc) -> bool:
     """Check if an asyncio.Process or subprocess.Popen is still running."""
     if proc is None:
@@ -443,17 +460,7 @@ class VMProcessManager:
             box86_env["XDG_CONFIG_HOME"] = "/tmp/86box-global"
             box86_env["HOME"] = "/tmp/86box-global"
             box86_env["XDG_RUNTIME_DIR"] = runtime_dir
-            # Avoid GameMode auto-hook in container logs. Some runtimes inject
-            # libgamemodeauto via LD_PRELOAD; strip only those entries.
-            ld_preload = box86_env.get("LD_PRELOAD", "")
-            if ld_preload:
-                parts = [p for p in ld_preload.split(":") if p]
-                filtered = [p for p in parts if "gamemodeauto" not in p.lower()]
-                if filtered:
-                    box86_env["LD_PRELOAD"] = ":".join(filtered)
-                else:
-                    box86_env.pop("LD_PRELOAD", None)
-            box86_env["GAMEMODEAUTO"] = "0"
+            _strip_gamemode_from_env(box86_env)
             # Extract-and-run avoids the AppImage FUSE mount, which would otherwise
             # fork a second "86Box" process as mount keeper. Single process = clean
             # SIGSTOP/SIGCONT for pause and simpler process group management.
@@ -591,16 +598,7 @@ class VMProcessManager:
         os.makedirs(runtime_dir, exist_ok=True)
         os.chmod(runtime_dir, 0o700)
         env["XDG_RUNTIME_DIR"] = runtime_dir
-        # Keep reset behavior consistent with start: strip gamemode auto-preload.
-        ld_preload = env.get("LD_PRELOAD", "")
-        if ld_preload:
-            parts = [p for p in ld_preload.split(":") if p]
-            filtered = [p for p in parts if "gamemodeauto" not in p.lower()]
-            if filtered:
-                env["LD_PRELOAD"] = ":".join(filtered)
-            else:
-                env.pop("LD_PRELOAD", None)
-        env["GAMEMODEAUTO"] = "0"
+        _strip_gamemode_from_env(env)
 
         log_key = procs.vm_uuid if procs.vm_uuid else str(vm_id)
         log_file_path = os.path.join(settings.log_dir, f"vm_{log_key}.log")

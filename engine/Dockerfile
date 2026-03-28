@@ -34,7 +34,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libvulkan1 \
     mesa-vulkan-drivers \
     libpipewire-0.3-0 \
-    gamemode \
     libasound2 \
     libpulse0 \
     libopenal1 \
