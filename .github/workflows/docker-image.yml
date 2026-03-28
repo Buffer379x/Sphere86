@@ -3,14 +3,15 @@ name: Build and Publish Docker Images
 on:
   push:
     branches: [ "main" ]
+    tags: [ "v*.*.*" ]
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  DOCKERHUB_REPO: buffer379x/sphere86
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    
     permissions:
       contents: read
       packages: write
@@ -19,15 +20,46 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Lowercase repository name
-        run: echo "REPO_LC=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}
+      - name: Extract metadata for Engine
+        id: meta-engine
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/buffer379x/sphere86-engine
+            ${{ env.DOCKERHUB_REPO }}
+          flavor: |
+            prefix=engine-,onlatest=true
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=sha
 
-      - name: Log in to the Container registry
+      - name: Extract metadata for Web
+        id: meta-web
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/buffer379x/sphere86-web
+            ${{ env.DOCKERHUB_REPO }}
+          flavor: |
+            prefix=web-,onlatest=true
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=sha
+
+      - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push Engine image
         uses: docker/build-push-action@v5
@@ -35,7 +67,8 @@ jobs:
           context: ./engine
           file: ./engine/Dockerfile
           push: true
-          tags: ghcr.io/${{ env.REPO_LC }}-engine:latest
+          tags: ${{ steps.meta-engine.outputs.tags }}
+          labels: ${{ steps.meta-engine.outputs.labels }}
 
       - name: Build and push Web image
         uses: docker/build-push-action@v5
@@ -43,4 +76,5 @@ jobs:
           context: ./web
           file: ./web/Dockerfile
           push: true
-          tags: ghcr.io/${{ env.REPO_LC }}-web:latest
+          tags: ${{ steps.meta-web.outputs.tags }}
+          labels: ${{ steps.meta-web.outputs.labels }}
