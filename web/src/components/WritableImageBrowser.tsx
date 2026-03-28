@@ -352,8 +352,8 @@ export default function WritableImageBrowser({ dark = false }: Props) {
         </div>
       )}
 
-      {/* Breadcrumb + actions toolbar */}
-      <div className={`flex items-center gap-2 px-4 py-2 border-b flex-shrink-0 ${bar}`}>
+      {/* Breadcrumb + actions toolbar — fixed height; second row always reserved to avoid layout jump */}
+      <div className={`flex items-center gap-2 px-4 h-11 border-b flex-shrink-0 box-border ${bar}`}>
         {/* Breadcrumb */}
         <div className="flex items-center gap-1 flex-1 min-w-0 overflow-hidden">
           {breadcrumb.map((item, i) => (
@@ -394,30 +394,32 @@ export default function WritableImageBrowser({ dark = false }: Props) {
         </div>
       </div>
 
-      {/* New folder input bar */}
-      {newFolderInput !== null && (
-        <div className={`flex items-center gap-2 px-4 py-2 border-b flex-shrink-0 ${bar}`}>
-          <span className={`text-xs ${d ? 'text-white/50' : 'text-slate-500 dark:text-slate-400'} shrink-0`}>
-            New folder in{' '}
-            <span className={`font-mono ${d ? 'text-white/70' : 'text-slate-700 dark:text-slate-300'}`}>
-              {currentDir || 'Images'}
-            </span>:
-          </span>
-          <input
-            ref={newFolderRef}
-            className={`${inputCls} flex-1`}
-            placeholder="Folder name"
-            value={newFolderInput}
-            onChange={e => setNewFolderInput(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Enter') handleMkdir()
-              if (e.key === 'Escape') setNewFolderInput(null)
-            }}
-          />
-          <button onClick={handleMkdir} className={btnCreate}>Create</button>
-          <button onClick={() => setNewFolderInput(null)} className={btnSm}>Cancel</button>
-        </div>
-      )}
+      {/* New folder input bar — same height when visible or empty */}
+      <div className={`flex items-center gap-2 px-4 min-h-10 h-10 border-b flex-shrink-0 box-border ${bar}`}>
+        {newFolderInput !== null ? (
+          <>
+            <span className={`text-xs ${d ? 'text-white/50' : 'text-slate-500 dark:text-slate-400'} shrink-0`}>
+              New folder in{' '}
+              <span className={`font-mono ${d ? 'text-white/70' : 'text-slate-700 dark:text-slate-300'}`}>
+                {currentDir || 'Images'}
+              </span>:
+            </span>
+            <input
+              ref={newFolderRef}
+              className={`${inputCls} flex-1`}
+              placeholder="Folder name"
+              value={newFolderInput}
+              onChange={e => setNewFolderInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') handleMkdir()
+                if (e.key === 'Escape') setNewFolderInput(null)
+              }}
+            />
+            <button type="button" onClick={handleMkdir} className={btnCreate}>Create</button>
+            <button type="button" onClick={() => setNewFolderInput(null)} className={btnSm}>Cancel</button>
+          </>
+        ) : null}
+      </div>
 
       {/* Column view */}
       {tree.length === 0 && !isLoading ? (

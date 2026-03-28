@@ -75,7 +75,7 @@ def _build_writable_tree(root: str) -> list:
 
 
 def _user_images_dir(user: User) -> str:
-    return settings.user_images_path(user.id)
+    return settings.user_images_path(user)
 
 
 def _safe_path(base: str, rel: str) -> str:

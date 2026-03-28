@@ -18,7 +18,7 @@ def _user_disk_usage(u: User) -> int:
     vm_usage = sum(dir_size(os.path.join(settings.vms_path, v.uuid)) for v in u.vms)
     return (
         vm_usage
-        + dir_size(settings.user_images_path(u.id))
+        + dir_size(settings.user_images_path(u))
         + dir_size(settings.shared_media_path(u.id))
     )
 

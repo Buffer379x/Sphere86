@@ -132,11 +132,17 @@ app = FastAPI(title="Sphere86 Runner", lifespan=lifespan)
 class StartRequest(BaseModel):
     vm_dir: str
     network_group_id: int | None = None
+    vm_uuid: str | None = None
 
 
 @app.post("/vms/{vm_id}/start")
 async def start_vm(vm_id: int, req: StartRequest):
-    result = await manager.start_vm(vm_id, req.vm_dir, network_group_id=req.network_group_id)
+    result = await manager.start_vm(
+        vm_id,
+        req.vm_dir,
+        network_group_id=req.network_group_id,
+        vm_uuid=req.vm_uuid,
+    )
     if result.get("error"):
         raise HTTPException(500, result["error"])
     return result

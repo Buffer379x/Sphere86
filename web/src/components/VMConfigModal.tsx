@@ -20,6 +20,8 @@ interface Props {
   onSave: (name: string, desc: string, groupId: number | null, config: VMConfig, sharedWith: number[]) => Promise<void>
   onClose: () => void
   title: string
+  /** Shown in parentheses after the title when set (e.g. VM UUID). */
+  vmUuid?: string | null
   readOnly?: boolean
 }
 
@@ -93,18 +95,20 @@ function Toggle({ value, onChange, label, disabled }: { value: boolean; onChange
   const isDisabled = disabled || useContext(DisabledCtx)
   return (
     <label className={clsx('flex items-center gap-2.5', isDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer')}>
-      <div
+      <button
+        type="button"
+        role="switch"
+        aria-checked={value}
+        disabled={isDisabled}
         onClick={() => !isDisabled && onChange(!value)}
         className={clsx(
-          'relative w-9 h-5 rounded-full transition-colors',
-          value ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'
+          'switch-track border-0 p-0',
+          value ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600',
+          isDisabled && 'cursor-not-allowed'
         )}
       >
-        <div className={clsx(
-          'absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform',
-          value ? 'translate-x-4' : 'translate-x-0.5'
-        )} />
-      </div>
+        <span className={clsx('switch-knob', value ? 'translate-x-6' : 'translate-x-1')} />
+      </button>
       {label && <span className="text-sm text-slate-700 dark:text-slate-300">{label}</span>}
     </label>
   )
@@ -115,6 +119,7 @@ function DeviceSettings({ device, settings, onChange }: {
   settings: Record<string, number | string>
   onChange: (key: string, value: number | string) => void
 }) {
+  const ctxDisabled = useContext(DisabledCtx)
   if (!device?.config?.length) return null
   return (
     <div className="mt-2 space-y-2 pl-2 border-l-2 border-slate-200 dark:border-slate-700">
@@ -131,8 +136,7 @@ function DeviceSettings({ device, settings, onChange }: {
                 ))}
               </select>
             ) : c.type === 'binary' ? (
-              <input type="checkbox" checked={!!val}
-                onChange={e => onChange(c.name, e.target.checked ? 1 : 0)} />
+              <Toggle value={!!val} onChange={v => onChange(c.name, v ? 1 : 0)} disabled={ctxDisabled} />
             ) : c.type === 'spinner' ? (
               <input type="number" className="input text-sm py-0.5 w-24"
                 min={c.spinner_min} max={c.spinner_max} step={c.spinner_step ?? 1}
@@ -291,7 +295,7 @@ function hddBusLimits(bus: string): { maxCyl: number, maxHeads: number, maxSpt: 
   return { maxCyl: 266305, maxHeads: 255, maxSpt: 255 }
 }
 
-export default function VMConfigModal({ vmId, initialConfig, initialName = '', initialDesc = '', initialGroupId, groups, onSave, onClose, title, readOnly = false, initialSharedWith }: Props) {
+export default function VMConfigModal({ vmId, initialConfig, initialName = '', initialDesc = '', initialGroupId, groups, onSave, onClose, title, vmUuid, readOnly = false, initialSharedWith }: Props) {
   const qc = useQueryClient()
   const [activeTab, setActiveTab] = useState<Tab>('general')
   const [name, setName] = useState(initialName)
@@ -688,7 +692,9 @@ export default function VMConfigModal({ vmId, initialConfig, initialName = '', i
         <div className="h-[85vh] card flex flex-col shadow-2xl">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex-shrink-0">
-            <h2 className="text-base font-semibold text-slate-900 dark:text-white">{title}</h2>
+            <h2 className="text-base font-semibold text-slate-900 dark:text-white">
+              {title}{vmUuid ? ` (${vmUuid})` : ''}
+            </h2>
             <button onClick={handleClose} className="btn-ghost p-1.5 rounded-lg">
               <X className="w-4 h-4" />
             </button>

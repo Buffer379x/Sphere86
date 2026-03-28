@@ -1,8 +1,14 @@
 from pydantic_settings import BaseSettings
-from typing import Optional
+from typing import Optional, Protocol
 from functools import lru_cache
 import os
+import re
 import secrets as _secrets
+
+
+class _UserDir(Protocol):
+    id: int
+    username: str
 
 # Generated once per process — tokens become invalid after a restart when no
 # APP_SECRET_KEY env-var is configured. Set APP_SECRET_KEY in the environment
@@ -89,11 +95,25 @@ class Settings(BaseSettings):
     # External read-only image library (mounted at /library in production)
     library_path: str = "/library"
 
-    def user_images_path(self, user_id: int) -> str:
-        """Return the per-user (or shared) images directory path."""
-        if self.user_management:
-            return os.path.join(self.data_path, "user_images", str(user_id))
-        return os.path.join(self.data_path, "user_images")
+    def _sanitize_username_dir(self, username: str) -> str:
+        s = re.sub(r"[^a-zA-Z0-9._-]+", "_", (username or "").strip())
+        return (s[:128] or "user").strip("._-") or "user"
+
+    def user_images_path(self, user: _UserDir) -> str:
+        """Return the per-user images directory path (subfolder = sanitized username).
+
+        If a legacy folder named by numeric user id still exists and the new path does not,
+        the legacy path is used so existing deployments keep working until data is moved.
+        """
+        base = os.path.join(self.data_path, "user_images")
+        if not self.user_management:
+            return base
+        name_dir = self._sanitize_username_dir(user.username)
+        new_path = os.path.join(base, name_dir)
+        legacy_path = os.path.join(base, str(user.id))
+        if os.path.isdir(legacy_path) and not os.path.isdir(new_path):
+            return legacy_path
+        return new_path
 
     def shared_media_path(self, user_id: int) -> str:
         """Return the per-user (or shared) media pool directory path."""

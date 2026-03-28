@@ -101,8 +101,8 @@ function LibraryBrowser({ library }: { library: LibraryNode[] }) {
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-1 px-5 py-2.5 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 flex-shrink-0">
+      {/* Breadcrumb — heights match WritableImageBrowser (h-11 + h-10) to avoid tab switch jump */}
+      <div className="flex items-center gap-1 px-4 h-11 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 flex-shrink-0 box-border">
         {breadcrumb.map((item, i) => (
           <Fragment key={i}>
             {i > 0 && <ChevronRight className="w-3.5 h-3.5 text-slate-300 dark:text-slate-700 shrink-0" />}
@@ -119,6 +119,7 @@ function LibraryBrowser({ library }: { library: LibraryNode[] }) {
           </Fragment>
         ))}
       </div>
+      <div className="h-10 min-h-10 flex-shrink-0 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 box-border" aria-hidden />
 
       {/* Columns + file info panel */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
@@ -213,7 +214,7 @@ export default function LibraryPage() {
   const hasLibrary = !libLoading && library.length > 0
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-[#0a0a0f]">
+    <div className="flex flex-col flex-1 min-h-0 h-full bg-slate-50 dark:bg-[#0a0a0f]">
 
       {/* Header */}
       <div className="flex-shrink-0 px-6 py-6 border-b border-slate-200 dark:border-slate-800">
@@ -266,7 +267,11 @@ export default function LibraryPage() {
         </div>
       )}
 
-      {serverOnline && tab === 'images' && <WritableImageBrowser />}
+      {serverOnline && tab === 'images' && (
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <WritableImageBrowser />
+        </div>
+      )}
 
       {serverOnline && tab === 'library' && (
         libLoading ? (
@@ -275,7 +280,9 @@ export default function LibraryPage() {
             Loading library…
           </div>
         ) : hasLibrary ? (
-          <LibraryBrowser library={library} />
+          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <LibraryBrowser library={library} />
+          </div>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-slate-400 gap-3">
             <FolderOpen className="w-14 h-14 opacity-20" />

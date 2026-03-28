@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Plus, Play, Square, RotateCcw, Pencil, Trash2, Monitor, Loader2,
   FolderPlus, ChevronDown, ChevronRight, LayoutGrid, List,
-  HardDrive, Eye, Network, Settings2, CloudOff, Users, ArrowUp, ArrowDown, FolderDown
+  HardDrive, Network, Settings2, CloudOff, Users, ArrowUp, ArrowDown, FolderDown
 } from 'lucide-react'
 import { vmApi, systemApi, formatBytes, userApi } from '../lib/api'
 import { VM, VMConfig, VMGroup } from '../types'
@@ -170,8 +170,8 @@ function VMCard({ vm, parentGroup, onEdit, groupColor, cpuSpeeds, onStartError }
               <Monitor className="w-3.5 h-3.5" />
               {isLockedByOther ? `Console (🔒 ${vm.locked_by_username})` : 'Console'}
             </button>
-            <button onClick={onEdit} disabled={!isOwnerOrAdmin} className="btn-ghost p-2 disabled:opacity-40 disabled:cursor-not-allowed" title={!isOwnerOrAdmin ? 'No permission' : 'View settings'}>
-              <Eye className="w-3.5 h-3.5" />
+            <button onClick={onEdit} disabled={!isOwnerOrAdmin} className="btn-ghost p-2 disabled:opacity-40 disabled:cursor-not-allowed" title={!isOwnerOrAdmin ? 'No permission' : 'View settings (read-only while running)'}>
+              <Pencil className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => stopMut.mutate()}
@@ -297,7 +297,7 @@ function VMRow({ vm, parentGroup, onEdit, groupColor, cpuSpeeds, onStartError }:
                 </button>
 
                 <button onClick={onEdit} disabled={!isOwnerOrAdmin} className="btn-ghost p-2 disabled:opacity-40 disabled:cursor-not-allowed" title={!isOwnerOrAdmin ? 'No permission' : 'View settings (read-only while running)'}>
-                  <Eye className="w-3.5 h-3.5" />
+                  <Pencil className="w-3.5 h-3.5" />
                 </button>
 
                 <button
@@ -414,13 +414,13 @@ function GroupModal({ onSave, onClose, initial, hasRunningVMs = false, initialSh
                 onClick={() => !hasRunningVMs && setNetworkEnabled(v => !v)}
                 disabled={hasRunningVMs}
                 className={clsx(
-                  'flex-shrink-0 relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none',
+                  'switch-track flex-shrink-0',
                   networkEnabled ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600',
                   hasRunningVMs && 'opacity-50 cursor-not-allowed',
                 )}
                 title={hasRunningVMs ? 'Stop all VMs before changing networking' : undefined}
               >
-                <span className={clsx('inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform', networkEnabled ? 'translate-x-6' : 'translate-x-1')} />
+                <span className={clsx('switch-knob', networkEnabled ? 'translate-x-6' : 'translate-x-1')} />
               </button>
             </div>
           </div>
@@ -859,6 +859,7 @@ export default function VMsPage() {
         <VMConfigModal
           vmId={editVM.id}
           title={`Edit — ${editVM.name}`}
+          vmUuid={editVM.uuid}
           initialName={editVM.name}
           initialDesc={editVM.description}
           initialGroupId={editVM.group_id}

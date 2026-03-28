@@ -138,6 +138,7 @@ class DynamicSettings:
     def audio_buffer_secs(self) -> float:
         val = get_db_setting(self.db, "audio_buffer_secs", str(self.env.audio_buffer_secs))
         try:
-            return float(val)
+            parsed = float(str(val).replace(",", "."))
+            return max(parsed, 0.05)
         except (ValueError, TypeError):
             return self.env.audio_buffer_secs

@@ -4,6 +4,8 @@ import asyncio
 import logging
 from ..config import get_settings
 from ..auth import decode_token
+from ..database import SessionLocal
+from ..models import VM
 
 router = APIRouter(prefix="/api/logs", tags=["logs"])
 settings = get_settings()
@@ -31,7 +33,29 @@ async def stream_logs(
     elif log_type == "engine":
         file_path = os.path.join(settings.log_dir, "engine.log")
     elif log_type == "vm" and vm_id:
-        file_path = os.path.join(settings.log_dir, f"vm_{vm_id}.log")
+        vm = None
+        db = SessionLocal()
+        try:
+            vm = db.query(VM).filter(VM.id == int(vm_id)).first()
+        except (ValueError, TypeError):
+            vm = None
+        finally:
+            db.close()
+
+        legacy_path = os.path.join(settings.log_dir, f"vm_{vm_id}.log")
+        uuid_path = (
+            os.path.join(settings.log_dir, f"vm_{vm.uuid}.log")
+            if vm and getattr(vm, "uuid", None)
+            else None
+        )
+        if uuid_path and os.path.exists(uuid_path):
+            file_path = uuid_path
+        elif os.path.exists(legacy_path):
+            file_path = legacy_path
+        elif uuid_path:
+            file_path = uuid_path
+        else:
+            file_path = legacy_path
     else:
         await websocket.send_text("--- Invalid log type or missing VM ID ---")
         await websocket.close(code=1003)

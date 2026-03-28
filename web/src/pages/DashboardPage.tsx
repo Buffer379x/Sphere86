@@ -223,14 +223,16 @@ function VMDetailsTable({ vms, currentUser }: { vms: any[], currentUser: any }) 
                     <VMSharedBadge isSharedWithMe={isSharedWithMe} ownerName={vm.owner_username} sharedCount={sharedCount} />
                   </td>
                   <td className="px-5 py-3 text-center">
-                    <span className={clsx(
-                      'status-dot mx-auto',
-                      vm.status === 'running' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]' :
-                      vm.status === 'starting' ? 'bg-amber-500 animate-pulse' :
-                      vm.status === 'paused' ? 'bg-blue-500' :
-                      vm.status === 'error' ? 'bg-red-500' :
-                      'bg-slate-400'
-                    )} />
+                    <span
+                      className={clsx(
+                        'mx-auto',
+                        vm.status === 'running' ? 'status-running' :
+                        vm.status === 'paused' ? 'status-paused' :
+                        vm.status === 'starting' ? 'status-vm-starting' :
+                        vm.status === 'error' ? 'status-error' :
+                        'status-stopped'
+                      )}
+                    />
                   </td>
                   <td className="px-5 py-3 text-slate-600 dark:text-slate-400 font-mono text-xs">{vm.config?.machine || '—'}</td>
                   <td className="px-5 py-3 text-slate-600 dark:text-slate-400 text-xs">{vm.config?.cpu_family || '—'}</td>

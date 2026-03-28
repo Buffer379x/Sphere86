@@ -318,13 +318,14 @@ export default function SettingsPage() {
                         <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Require login to access the dashboard. If disabled, everyone is admin.</p>
                       </div>
                       <button
+                        type="button"
                         onClick={() => saveSettings({ user_management: !formState.user_management })}
                         className={clsx(
-                          'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+                          'switch-track',
                           formState.user_management ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'
                         )}
                       >
-                        <span className={clsx('h-4 w-4 transform rounded-full bg-white transition-transform', formState.user_management ? 'translate-x-6' : 'translate-x-1')} />
+                        <span className={clsx('switch-knob', formState.user_management ? 'translate-x-6' : 'translate-x-1')} />
                       </button>
                     </div>
 
@@ -335,13 +336,14 @@ export default function SettingsPage() {
                           <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Allow users to log in using corporate LDAP/Active Directory.</p>
                         </div>
                         <button
+                          type="button"
                           onClick={() => saveSettings({ ldap_enabled: !formState.ldap_enabled })}
                           className={clsx(
-                            'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+                            'switch-track',
                             formState.ldap_enabled ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'
                           )}
                         >
-                          <span className={clsx('h-4 w-4 transform rounded-full bg-white transition-transform', formState.ldap_enabled ? 'translate-x-6' : 'translate-x-1')} />
+                          <span className={clsx('switch-knob', formState.ldap_enabled ? 'translate-x-6' : 'translate-x-1')} />
                         </button>
                       </div>
 
@@ -452,13 +454,14 @@ export default function SettingsPage() {
                           <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Global quota enforcement toggle.</p>
                         </div>
                         <button
+                          type="button"
                           onClick={() => saveSettings({ enforce_quotas: !formState.enforce_quotas })}
                           className={clsx(
-                            'relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0',
+                            'switch-track shrink-0',
                             formState.enforce_quotas ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'
                           )}
                         >
-                          <span className={clsx('h-4 w-4 transform rounded-full bg-white transition-transform', formState.enforce_quotas ? 'translate-x-6' : 'translate-x-1')} />
+                          <span className={clsx('switch-knob', formState.enforce_quotas ? 'translate-x-6' : 'translate-x-1')} />
                         </button>
                       </div>
                     </div>
@@ -587,19 +590,28 @@ export default function SettingsPage() {
                       <div className="flex-1">
                         <h3 className="font-medium text-slate-900 dark:text-white flex items-center">
                           Audio Buffer (s)
-                          <RestartHint />
                         </h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Latency vs. smoothness (default 0.4).</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Client-side live buffer target — lower = less latency, higher = smoother (default 0.15).</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <input
                           type="number"
-                          step="0.1"
+                          step="0.05"
+                          min="0.05"
+                          max="2"
                           className="input w-28 text-sm"
                           value={formState.audio_buffer_secs || 0.15}
-                          onChange={e => setFormState(s => ({ ...s, audio_buffer_secs: parseFloat(e.target.value) }))}
+                          onChange={e => {
+                            const raw = e.target.value.replace(',', '.')
+                            const v = parseFloat(raw)
+                            if (!Number.isNaN(v)) setFormState(s => ({ ...s, audio_buffer_secs: v }))
+                          }}
                         />
-                        <button className="btn-secondary px-2.5 py-1.5" onClick={() => saveSettings({ audio_buffer_secs: formState.audio_buffer_secs })}>Save</button>
+                        <button className="btn-secondary px-2.5 py-1.5" onClick={() => {
+                          const v = formState.audio_buffer_secs
+                          const safe = (typeof v === 'number' && v >= 0.05) ? v : 0.15
+                          saveSettings({ audio_buffer_secs: safe })
+                        }}>Save</button>
                       </div>
                     </div>
                   </div>

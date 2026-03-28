@@ -19,10 +19,18 @@ class RunnerClient:
         self.base_url = settings.runner_url
         self.timeout = 30.0
 
-    async def start_vm(self, vm_id: int, vm_dir: str, network_group_id: int | None = None) -> dict:
+    async def start_vm(
+        self,
+        vm_id: int,
+        vm_dir: str,
+        network_group_id: int | None = None,
+        vm_uuid: str | None = None,
+    ) -> dict:
         payload: dict = {"vm_dir": vm_dir}
         if network_group_id is not None:
             payload["network_group_id"] = network_group_id
+        if vm_uuid:
+            payload["vm_uuid"] = vm_uuid
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             r = await client.post(f"{self.base_url}/vms/{vm_id}/start", json=payload)
             if not r.is_success:

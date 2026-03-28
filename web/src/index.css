@@ -25,8 +25,18 @@
     @apply border-slate-200 dark:border-slate-800;
   }
 
+  /* Full-viewport shell: % heights only work if the chain is unbroken; Router wrappers
+     sit between #root and Layout, so we anchor the app with dvh on #root and Layout. */
+  html {
+    @apply m-0 h-full min-h-dvh;
+  }
+
   body {
-    @apply bg-slate-50 dark:bg-[#0a0a0f] text-slate-900 dark:text-slate-200 font-sans antialiased;
+    @apply m-0 min-h-dvh h-full bg-slate-50 dark:bg-[#0a0a0f] text-slate-900 dark:text-slate-200 font-sans antialiased;
+  }
+
+  #root {
+    @apply flex h-dvh min-h-0 w-full flex-col overflow-hidden;
   }
 
   ::-webkit-scrollbar {
@@ -100,13 +110,23 @@
   }
 
   .status-dot {
-    @apply w-2 h-2 rounded-full inline-block;
+    @apply w-2 h-2 rounded-full inline-block flex-shrink-0;
   }
 
-  .status-running { @apply status-dot bg-emerald-500 animate-pulse; }
-  .status-stopped { @apply status-dot bg-slate-400; }
-  .status-starting { @apply status-dot bg-amber-500 animate-pulse; }
-  .status-error { @apply status-dot bg-red-500; }
+  /* Align with Layout StatusDot / VM list: running=green pulse, paused=amber pulse, starting=blue pulse */
+  .status-running { @apply status-dot bg-emerald-500 dark:bg-emerald-400 animate-pulse; }
+  .status-paused { @apply status-dot bg-amber-500 dark:bg-amber-400 animate-pulse; }
+  .status-vm-starting { @apply status-dot bg-blue-500 dark:bg-blue-400 animate-pulse; }
+  .status-stopped { @apply status-dot bg-slate-400 dark:bg-slate-500; }
+  .status-error { @apply status-dot bg-red-500 dark:bg-red-400; }
+
+  /* Standard ON/OFF switch — same geometry as Users permissions (h-6 w-11) */
+  .switch-track {
+    @apply relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-0 p-0 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40;
+  }
+  .switch-knob {
+    @apply pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform;
+  }
 
   .tab-trigger {
     @apply px-4 py-2 text-sm font-medium text-slate-500 dark:text-slate-500

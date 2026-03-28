@@ -68,7 +68,7 @@ async def get_user_stats(
     vms = db.query(VM).filter(VM.user_id == current_user.id).all()
     vm_count = len(vms)
     running_count = sum(1 for v in vms if v.status == "running")
-    user_images_dir = settings.user_images_path(current_user.id)
+    user_images_dir = settings.user_images_path(current_user)
     shared_media_dir = settings.shared_media_path(current_user.id)
     vm_usage = sum(dir_size(os.path.join(settings.vms_path, vm.uuid)) for vm in vms)
     disk_usage = vm_usage + dir_size(user_images_dir) + dir_size(shared_media_dir)
@@ -92,6 +92,9 @@ async def get_version_info(
     except Exception:
         runner_info = {}
 
+    from ..services.settings import DynamicSettings
+    ds = DynamicSettings(db)
+
     return VersionInfo(
         box86_version=runner_info.get("version"),
         box86_latest=runner_info.get("latest"),
@@ -102,6 +105,7 @@ async def get_version_info(
         update_available=runner_info.get("update_available", False),
         roms_update_available=runner_info.get("roms_update_available", False),
         vm_auto_shutdown_minutes=runner_info.get("vm_auto_shutdown_minutes", 0),
+        audio_buffer_secs=ds.audio_buffer_secs,
     )
 
 
@@ -418,7 +422,7 @@ async def get_all_users_stats(
         vm_usage = sum(dir_size(os.path.join(settings.vms_path, v.uuid)) for v in vms)
         disk_usage = (
             vm_usage
-            + dir_size(settings.user_images_path(u.id))
+            + dir_size(settings.user_images_path(u))
             + dir_size(settings.shared_media_path(u.id))
         )
         result.append({

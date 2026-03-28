@@ -94,15 +94,43 @@ function UserModal({ initial, onSave, onClose }: {
               <input type="number" min={0} max={999999} className="input" value={form.max_storage_gb} onChange={e => setForm(f => ({ ...f, max_storage_gb: parseInt(e.target.value) }))} />
             </div>
           </div>
-          <div className="flex items-center gap-6">
-            <label className={`flex items-center gap-2 ${isBootstrap ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`} title={isBootstrap ? 'Built-in admin account cannot lose admin status' : undefined}>
-              <input type="checkbox" checked={form.is_admin} disabled={isBootstrap} onChange={e => setForm(f => ({ ...f, is_admin: e.target.checked }))} className="rounded accent-blue-600" />
-              <span className="text-sm text-slate-700 dark:text-slate-300">Admin</span>
-            </label>
-            <label className={`flex items-center gap-2 ${isBootstrap ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`} title={isBootstrap ? 'Built-in admin account cannot be deactivated' : undefined}>
-              <input type="checkbox" checked={form.is_active} disabled={isBootstrap} onChange={e => setForm(f => ({ ...f, is_active: e.target.checked }))} className="rounded accent-blue-600" />
-              <span className="text-sm text-slate-700 dark:text-slate-300">Active</span>
-            </label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Admin</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={form.is_admin}
+                disabled={isBootstrap}
+                onClick={() => !isBootstrap && setForm(f => ({ ...f, is_admin: !f.is_admin }))}
+                className={clsx(
+                  'switch-track flex-shrink-0',
+                  form.is_admin ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600',
+                  isBootstrap && 'cursor-not-allowed opacity-60',
+                )}
+                title={isBootstrap ? 'Built-in admin account cannot lose admin status' : undefined}
+              >
+                <span className={clsx('switch-knob', form.is_admin ? 'translate-x-6' : 'translate-x-1')} />
+              </button>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Active</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={form.is_active}
+                disabled={isBootstrap}
+                onClick={() => !isBootstrap && setForm(f => ({ ...f, is_active: !f.is_active }))}
+                className={clsx(
+                  'switch-track flex-shrink-0',
+                  form.is_active ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600',
+                  isBootstrap && 'cursor-not-allowed opacity-60',
+                )}
+                title={isBootstrap ? 'Built-in admin account cannot be deactivated' : undefined}
+              >
+                <span className={clsx('switch-knob', form.is_active ? 'translate-x-6' : 'translate-x-1')} />
+              </button>
+            </div>
           </div>
         </div>
         <div className="border-t border-slate-200 dark:border-slate-800 pt-4 mt-4">
@@ -124,12 +152,12 @@ function UserModal({ initial, onSave, onClose }: {
                   onClick={() => setForm(f => ({ ...f, [perm.key]: !(f as any)[perm.key] }))}
                   disabled={form.is_admin}
                   className={clsx(
-                    'flex-shrink-0 relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none',
+                    'switch-track flex-shrink-0',
                     form.is_admin ? 'bg-blue-300 dark:bg-blue-900/50 cursor-not-allowed' : (form as any)[perm.key] ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600',
                   )}
                   title={form.is_admin ? 'Admins always have all permissions' : undefined}
                 >
-                  <span className={clsx('inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform', (form.is_admin || (form as any)[perm.key]) ? 'translate-x-6' : 'translate-x-1')} />
+                  <span className={clsx('switch-knob', (form.is_admin || (form as any)[perm.key]) ? 'translate-x-6' : 'translate-x-1')} />
                 </button>
               </div>
             ))}

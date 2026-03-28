@@ -46,6 +46,11 @@ interface AppStore {
   // Server connection
   serverOnline: boolean
   setServerOnline: (online: boolean) => void
+
+  // Sidebar (desktop / tablet)
+  sidebarCollapsed: boolean
+  setSidebarCollapsed: (collapsed: boolean) => void
+  toggleSidebarCollapsed: () => void
 }
 
 export const useStore = create<AppStore>()(
@@ -132,10 +137,20 @@ export const useStore = create<AppStore>()(
 
       serverOnline: true,
       setServerOnline: (online) => set({ serverOnline: online }),
+
+      sidebarCollapsed: false,
+      setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
+      toggleSidebarCollapsed: () => set(s => ({ sidebarCollapsed: !s.sidebarCollapsed })),
     }),
     {
       name: 'Sphere86-store',
-      partialize: (s) => ({ theme: s.theme, token: s.token, openTabs: s.openTabs, activeTab: s.activeTab }),
+      partialize: (s) => ({
+        theme: s.theme,
+        token: s.token,
+        openTabs: s.openTabs,
+        activeTab: s.activeTab,
+        sidebarCollapsed: s.sidebarCollapsed,
+      }),
     }
   )
 )

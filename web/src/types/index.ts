@@ -300,6 +300,7 @@ export interface VersionInfo {
   update_available: boolean
   roms_update_available: boolean
   vm_auto_shutdown_minutes?: number
+  audio_buffer_secs?: number
 }
 
 export interface DeviceConfigOption {

@@ -227,7 +227,7 @@ async def create_vm(
             os.symlink(settings.library_path, lib_link)
 
     # Create an 'images' symlink pointing at the user's (or shared) custom images directory
-    user_imgs = settings.user_images_path(current_user.id)
+    user_imgs = settings.user_images_path(current_user)
     os.makedirs(user_imgs, exist_ok=True)
     imgs_link = os.path.join(media_dir, "images")
     if not os.path.exists(imgs_link) and not os.path.islink(imgs_link):
@@ -353,7 +353,7 @@ async def start_vm(
     db.commit()
 
     runner = RunnerClient()
-    result = await runner.start_vm(vm_id, vm_dir, network_group_id=network_group_id)
+    result = await runner.start_vm(vm_id, vm_dir, network_group_id=network_group_id, vm_uuid=vm.uuid)
     if result.get("error"):
         vm.status = "stopped"
         vm.locked_by_user_id = None

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
-import { Maximize2, RefreshCw, PowerOff, Play, Pause, AlertCircle, Monitor, Settings, Volume2, VolumeX, Keyboard, CloudOff, Camera, ZoomIn, ZoomOut, Mouse, Eye, EyeOff } from 'lucide-react'
+import { Maximize2, RefreshCw, PowerOff, Play, Pause, AlertCircle, Monitor, Pencil, Volume2, VolumeX, Keyboard, CloudOff, Camera, ZoomIn, ZoomOut, Mouse, PanelTop } from 'lucide-react'
 import { vmApi, systemApi } from '../lib/api'
 import { useStore } from '../store/useStore'
 import { VMConfig } from '../types'
@@ -126,7 +126,16 @@ export default function VNCViewer({ vmId, vmName, isVisible = true }: Props) {
 
   const isRunning = vmStatus?.status === 'running'
   const isPaused = vmStatus?.status === 'paused'
+  const isStarting = vmStatus?.status === 'starting'
   const isAlive = isRunning || isPaused  // process is up (running or paused)
+
+  const summaryStatusClass = (() => {
+    if (!serverOnline) return 'status-stopped'
+    if (isRunning) return 'status-running'
+    if (isPaused) return 'status-paused'
+    if (isStarting) return 'status-vm-starting'
+    return 'status-stopped'
+  })()
 
   useEffect(() => {
     if (!isVisible || !isRunning) setKeyboardActive(false)
@@ -244,9 +253,11 @@ export default function VNCViewer({ vmId, vmName, isVisible = true }: Props) {
     }
   }, [isAlive, vmId])
 
-  // Configurable audio buffer (seconds). Set AUDIO_BUFFER_SECS in .env to tune.
-  // Lower = less latency but more risk of underrun/choppiness.
-  const audioBuf = parseFloat(import.meta.env.VITE_AUDIO_BUFFER_SECS ?? '0.15')
+  // Audio buffer target (seconds). Read live from server settings; fall back to
+  // the build-time env var or the hard-coded default (0.15 s).
+  const rawBuf = version?.audio_buffer_secs
+    ?? parseFloat(import.meta.env.VITE_AUDIO_BUFFER_SECS ?? '0.15')
+  const audioBuf = (Number.isFinite(rawBuf) && rawBuf >= 0.05) ? rawBuf : 0.15
 
   // MSE-based audio streaming.
   // Only stream audio for the active (visible) tab to avoid spawning multiple
@@ -492,7 +503,7 @@ export default function VNCViewer({ vmId, vmName, isVisible = true }: Props) {
       {/* Toolbar */}
       <div className="h-12 flex items-center justify-between px-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex-shrink-0">
         <div className="flex items-center gap-3">
-          <div className={`status-dot ${serverOnline && isRunning ? 'status-running' : serverOnline && isPaused ? 'status-starting' : 'status-stopped'}`} />
+          <div className={summaryStatusClass} title={vmStatus?.status || 'unknown'} />
           <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{vmName}</span>
           <span className="text-xs text-slate-500 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800">
             {vmStatus?.status || 'unknown'}
@@ -539,22 +550,6 @@ export default function VNCViewer({ vmId, vmName, isVisible = true }: Props) {
             </button>
           )}
 
-          {/* Toggle 86Box UI (menu + status bar) — only when running */}
-          {isRunning && serverOnline && (
-            <button
-              onClick={handleToggleUI}
-              title={uiVisible ? 'Hide 86Box menu & status bar (Ctrl+Alt+PgDown)' : 'Show 86Box menu & status bar (Ctrl+Alt+PgDown)'}
-              className={`btn-ghost text-xs ${uiVisible ? 'text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
-            >
-              {uiVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-            </button>
-          )}
-
-          {/* Settings */}
-          <button onClick={() => setShowSettings(true)} title="VM Settings" className="btn-ghost text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-xs">
-            <Settings className="w-3.5 h-3.5" />
-          </button>
-
           {/* Screen menu — only when running and online */}
           {serverOnline && isRunning && <div ref={screenMenuRef} className="relative">
             <button
@@ -591,20 +586,45 @@ export default function VNCViewer({ vmId, vmName, isVisible = true }: Props) {
             )}
           </div>}
 
-          <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-0.5" />
+          {/* Divider before VM settings — same as swapping pencil with the line after Monitor */}
+          {isRunning && serverOnline && (
+            <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-0.5" />
+          )}
+
+          {/* VM Settings */}
+          <button onClick={() => setShowSettings(true)} title="VM Settings" className="btn-ghost text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-xs">
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
+
+          {/* 86Box display menu — only when running */}
+          {isRunning && serverOnline && (
+            <>
+              <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-0.5" />
+              <button
+                onClick={handleToggleUI}
+                title={uiVisible ? 'Hide 86Box menu & status bar (Ctrl+Alt+PgDown)' : 'Show 86Box menu & status bar (Ctrl+Alt+PgDown)'}
+                className={`btn-ghost text-xs ${uiVisible ? 'text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+              >
+                <span className="relative inline-flex w-3.5 h-3.5 items-center justify-center">
+                  <PanelTop className="w-3.5 h-3.5" />
+                  {!uiVisible && (
+                    <svg className="absolute inset-0 w-3.5 h-3.5 text-current pointer-events-none" viewBox="0 0 24 24" fill="none" aria-hidden>
+                      <line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+                    </svg>
+                  )}
+                </span>
+              </button>
+              <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-0.5" />
+            </>
+          )}
+
+          {!(isRunning && serverOnline) && (
+            <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-0.5" />
+          )}
 
           {/* Running-only controls */}
           {(isRunning || isPaused) && serverOnline ? (
             <>
-              <button
-                onClick={handleCtrlAltDel}
-                disabled={isPaused}
-                title={isPaused ? 'Resume VM before sending Ctrl+Alt+Del' : 'Send Ctrl+Alt+Del'}
-                className="btn-ghost text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-xs disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <Keyboard className="w-3.5 h-3.5" />
-                Ctrl+Alt+Del
-              </button>
               <button
                 onClick={handlePause}
                 title={isPaused ? 'Resume VM' : 'Pause VM'}
@@ -634,7 +654,7 @@ export default function VNCViewer({ vmId, vmName, isVisible = true }: Props) {
             <button
               onClick={handleStart}
               disabled={busy || !serverOnline}
-              className="btn-ghost text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 text-xs disabled:opacity-50"
+              className="btn-success inline-flex items-center text-xs py-1.5 px-3 gap-1.5 disabled:opacity-50"
             >
               <Play className="w-3.5 h-3.5" />
               {busy ? 'Starting…' : 'Start'}
@@ -683,6 +703,20 @@ export default function VNCViewer({ vmId, vmName, isVisible = true }: Props) {
               <button onClick={() => sendSpecialKey(0xff52, 'ArrowUp')} className="px-2 py-1 bg-slate-800 text-white rounded text-[10px] hover:bg-slate-700 transition-colors">▲</button>
               <button onClick={() => sendSpecialKey(0xff54, 'ArrowDown')} className="px-2 py-1 bg-slate-800 text-white rounded text-[10px] hover:bg-slate-700 transition-colors">▼</button>
               <button onClick={() => sendSpecialKey(0xff53, 'ArrowRight')} className="px-2 py-1 bg-slate-800 text-white rounded text-[10px] hover:bg-slate-700 transition-colors">▶</button>
+            </div>
+
+            <div className="w-full h-px bg-slate-700 my-0.5" />
+
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => handleCtrlAltDel()}
+                disabled={isPaused}
+                title={isPaused ? 'Resume VM before sending Ctrl+Alt+Del' : 'Send Ctrl+Alt+Del to guest'}
+                className="px-2.5 py-1 bg-slate-800 text-white rounded text-[10px] font-semibold hover:bg-slate-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed tracking-tight"
+              >
+                Ctrl+Alt+Del
+              </button>
             </div>
           </div>
         )}
@@ -771,6 +805,7 @@ export default function VNCViewer({ vmId, vmName, isVisible = true }: Props) {
         <VMConfigModal
           vmId={vmId}
           title={`Settings — ${vmFull?.name ?? vmName}`}
+          vmUuid={vmFull?.uuid}
           initialName={vmFull?.name ?? vmName}
           initialDesc={vmFull?.description}
           initialGroupId={vmFull?.group_id ?? undefined}

@@ -63,19 +63,22 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <BrowserRouter>
-      <AppInit>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route
-            path="/*"
-            element={
-              <PrivateRoute>
-                <Layout />
-              </PrivateRoute>
-            }
-          />
-        </Routes>
-      </AppInit>
+      {/* Fills #root (h-dvh); Router has no intrinsic height — this restores the %/flex chain */}
+      <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+        <AppInit>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/*"
+              element={
+                <PrivateRoute>
+                  <Layout />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
+        </AppInit>
+      </div>
     </BrowserRouter>
   )
 }

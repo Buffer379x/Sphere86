@@ -354,6 +354,7 @@ class VersionInfo(BaseModel):
     update_available: bool = False
     roms_update_available: bool = False
     vm_auto_shutdown_minutes: int = 0
+    audio_buffer_secs: float = 0.15
 
 class UserStats(BaseModel):
     vm_count: int

@@ -37,6 +37,7 @@ class VMProcesses:
     slot: int
     display: str       # ":100"
     vnc_tcp_port: int  # Xtigervnc RFB TCP port (base_vnc_port + slot)
+    vm_uuid: str = ""  # for log file name vm_{uuid}.log
     vm_dir: str = ""
     box86_cmd: List[str] = field(default_factory=list)
     pulse_proc: Optional[subprocess.Popen] = None
@@ -233,7 +234,13 @@ class VMProcessManager:
     def _free_slot(self, slot: int):
         self._slots.discard(slot)
 
-    async def start_vm(self, vm_id: int, vm_dir: str, network_group_id: Optional[int] = None) -> dict:
+    async def start_vm(
+        self,
+        vm_id: int,
+        vm_dir: str,
+        network_group_id: Optional[int] = None,
+        vm_uuid: Optional[str] = None,
+    ) -> dict:
         if not os.path.isfile(settings.box86_bin):
             return {
                 "error": "86Box is not installed. Please go to Settings and click 'Update Now' to download it."
@@ -269,6 +276,7 @@ class VMProcessManager:
             display=display,
             vnc_tcp_port=vnc_tcp_port,
             network_group_id=network_group_id,
+            vm_uuid=(vm_uuid or "").strip(),
         )
 
         try:
@@ -434,7 +442,8 @@ class VMProcessManager:
             # SIGSTOP/SIGCONT for pause and simpler process group management.
             box86_env["APPIMAGE_EXTRACT_AND_RUN"] = "1"
 
-            log_file_path = os.path.join(settings.log_dir, f"vm_{vm_id}.log")
+            log_key = procs.vm_uuid if procs.vm_uuid else str(vm_id)
+            log_file_path = os.path.join(settings.log_dir, f"vm_{log_key}.log")
             try:
                 vm_log_file = open(log_file_path, "a")
                 # Add a separator for new start
@@ -560,7 +569,8 @@ class VMProcessManager:
         env["SDL_AUDIODRIVER"] = "pulse"
         env["PULSE_SINK"] = "box86_sink"
 
-        log_file_path = os.path.join(settings.log_dir, f"vm_{vm_id}.log")
+        log_key = procs.vm_uuid if procs.vm_uuid else str(vm_id)
+        log_file_path = os.path.join(settings.log_dir, f"vm_{log_key}.log")
         try:
             vm_log_file = open(log_file_path, "a")
             vm_log_file.write(f"\n--- VM RESET at {time.strftime('%Y-%m-%d %H:%M:%S')} ---\n")
