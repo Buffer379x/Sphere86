@@ -12,13 +12,14 @@ TMPL_DIR="/etc/nginx/Sphere86-templates"
 OUT="/etc/nginx/conf.d/server.conf"
 
 export SERVER_NAME="${SERVER_NAME:-_}"
+export ENGINE_HOST="${ENGINE_HOST:-engine}"
 
 mkdir -p /etc/nginx/conf.d
 
 if [ -f "$CERT_DIR/fullchain.pem" ] && [ -f "$CERT_DIR/privkey.pem" ]; then
-    echo "[Sphere86] SSL certs found in $CERT_DIR — enabling HTTPS (server_name: $SERVER_NAME)"
-    envsubst '${SERVER_NAME}' < "$TMPL_DIR/https.conf.template" > "$OUT"
+    echo "[Sphere86] SSL certs found in $CERT_DIR — enabling HTTPS (server_name: $SERVER_NAME, upstream: $ENGINE_HOST)"
+    envsubst '${SERVER_NAME} ${ENGINE_HOST}' < "$TMPL_DIR/https.conf.template" > "$OUT"
 else
-    echo "[Sphere86] No SSL certs — serving HTTP (server_name: $SERVER_NAME)"
-    envsubst '${SERVER_NAME}' < "$TMPL_DIR/http.conf.template" > "$OUT"
+    echo "[Sphere86] No SSL certs — serving HTTP (server_name: $SERVER_NAME, upstream: $ENGINE_HOST)"
+    envsubst '${SERVER_NAME} ${ENGINE_HOST}' < "$TMPL_DIR/http.conf.template" > "$OUT"
 fi

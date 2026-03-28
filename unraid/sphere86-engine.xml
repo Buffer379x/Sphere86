@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>Sphere86-Engine</Name>
+  <Repository>soupboss99/sphere86:engine-latest</Repository>
+  <Registry>https://hub.docker.com/r/soupboss99/sphere86</Registry>
+  <Network>custom:sphere86</Network>
+  <MyIP/>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/Buffer379x/Sphere86/issues</Support>
+  <Project>https://github.com/Buffer379x/Sphere86</Project>
+  <Overview>Sphere86 **Engine**: FastAPI-Backend, Runner (86Box, VNC, Audio). Zusammen mit dem Template **Sphere86-Web** nutzen — zuerst Engine starten.&#xD;
+&#xD;
+**Netzwerk:** Vor der Installation ein Docker-Bridgenetzwerk namens `sphere86` anlegen (Docker → Networks → Add Network → Bridge → Name `sphere86`). Beide Container müssen diesem Netzwerk beitreten.&#xD;
+&#xD;
+Der Nginx-Container erreicht den Engine-Container unter dem Hostnamen `engine` (wird per `--network-alias engine` gesetzt).&#xD;
+&#xD;
+**Alternative Registry (GHCR):** `ghcr.io/buffer379x/sphere86-engine:latest`&#xD;
+&#xD;
+Details: [README](https://github.com/Buffer379x/Sphere86), [Quickstart](https://github.com/Buffer379x/Sphere86/blob/main/QUICKSTART.md).</Overview>
+  <Category>Productivity: Tools: Other</Category>
+  <WebUI/>
+  <TemplateURL>https://raw.githubusercontent.com/Buffer379x/Sphere86/main/unraid/sphere86-engine.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/Buffer379x/Sphere86/main/docs/logo/logo.png</Icon>
+  <ExtraParams>--platform linux/amd64 --shm-size=256m --cap-add=SYS_PTRACE --cap-add=NET_ADMIN --cap-add=NET_RAW --network-alias engine --restart=unless-stopped</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled>1743120000</DateInstalled>
+  <DonateText/>
+  <DonateLink/>
+  <Requires/>
+  <Config Name="App secret (JWT)" Target="APP_SECRET_KEY" Default="" Mode="" Description="Langer zufälliger Wert; bei Änderung werden bestehende Sessions ungültig." Type="Variable" Display="always" Required="true" Mask="true"></Config>
+  <Config Name="PUID" Target="PUID" Default="1000" Mode="" Description="Dateibesitzer für /data; bei Unraid ggf. 99 (nobody) verwenden." Type="Variable" Display="always" Required="true" Mask="false">1000</Config>
+  <Config Name="PGID" Target="PGID" Default="1000" Mode="" Description="Gruppe für /data; bei Unraid ggf. 100 (users)." Type="Variable" Display="always" Required="true" Mask="false">1000</Config>
+  <Config Name="Timezone" Target="TZ" Default="Europe/Berlin" Mode="" Description="" Type="Variable" Display="always" Required="false" Mask="false">Europe/Berlin</Config>
+  <Config Name="User management" Target="USER_MANAGEMENT" Default="true" Mode="" Description="true = Login; false = offenes UI ohne Auth." Type="Variable" Display="always" Required="true" Mask="false">true</Config>
+  <Config Name="Admin username (first boot)" Target="ADMIN_USERNAME" Default="admin" Mode="" Description="Nur wenn USER_MANAGEMENT=true und DB neu." Type="Variable" Display="always" Required="false" Mask="false">admin</Config>
+  <Config Name="Admin password (first boot)" Target="ADMIN_PASSWORD" Default="changeme" Mode="" Description="Unbedingt ändern." Type="Variable" Display="always" Required="false" Mask="true">changeme</Config>
+  <Config Name="Admin email" Target="ADMIN_EMAIL" Default="admin@example.com" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false">admin@example.com</Config>
+  <Config Name="Runner URL (internal)" Target="RUNNER_URL" Default="http://localhost:8001" Mode="" Description="Backend → Runner; bei Engine+Runner im gleichen Container: localhost:8001 unverändert lassen." Type="Variable" Display="advanced" Required="true" Mask="false">http://localhost:8001</Config>
+  <Config Name="JWT algorithm" Target="JWT_ALGORITHM" Default="HS256" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false">HS256</Config>
+  <Config Name="Access token lifetime (minutes)" Target="ACCESS_TOKEN_EXPIRE_MINUTES" Default="1440" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false">1440</Config>
+  <Config Name="Default max VMs per user" Target="DEFAULT_MAX_VMS" Default="10" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false">10</Config>
+  <Config Name="Default max storage GB per user" Target="DEFAULT_MAX_STORAGE_GB" Default="100" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false">100</Config>
+  <Config Name="LDAP enabled" Target="LDAP_ENABLED" Default="false" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false">false</Config>
+  <Config Name="LDAP server" Target="LDAP_SERVER" Default="" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="LDAP port" Target="LDAP_PORT" Default="389" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false">389</Config>
+  <Config Name="LDAP base DN" Target="LDAP_BASE_DN" Default="" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="LDAP bind DN" Target="LDAP_BIND_DN" Default="" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="LDAP bind password" Target="LDAP_BIND_PASSWORD" Default="" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="true"></Config>
+  <Config Name="LDAP user filter" Target="LDAP_USER_FILTER" Default="(objectClass=person)" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false">(objectClass=person)</Config>
+  <Config Name="LDAP group DN" Target="LDAP_GROUP_DN" Default="" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="LDAP username attribute" Target="LDAP_USERNAME_ATTR" Default="uid" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false">uid</Config>
+  <Config Name="LDAP email attribute" Target="LDAP_EMAIL_ATTR" Default="mail" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false">mail</Config>
+  <Config Name="LDAP TLS" Target="LDAP_TLS" Default="false" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false">false</Config>
+  <Config Name="86Box version (pin)" Target="BOX86_VERSION" Default="" Mode="" Description="Leer = automatisch; sonst Release-Tag von 86Box." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="86Box arch" Target="BOX86_ARCH" Default="x86_64" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false">x86_64</Config>
+  <Config Name="Base VNC port (internal)" Target="BASE_VNC_PORT" Default="5900" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false">5900</Config>
+  <Config Name="Base WebSocket port (internal)" Target="BASE_WS_PORT" Default="6900" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false">6900</Config>
+  <Config Name="Max concurrent VMs (global)" Target="MAX_CONCURRENT_VMS" Default="50" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false">50</Config>
+  <Config Name="Active VM limit" Target="ACTIVE_VM_LIMIT" Default="5" Mode="" Description="Maximal gleichzeitig laufende VMs." Type="Variable" Display="always" Required="false" Mask="false">5</Config>
+  <Config Name="VM auto-shutdown minutes" Target="VM_AUTO_SHUTDOWN_MINUTES" Default="0" Mode="" Description="0 = deaktiviert." Type="Variable" Display="advanced" Required="false" Mask="false">0</Config>
+  <Config Name="Log level" Target="LOG_LEVEL" Default="info" Mode="" Description="" Type="Variable" Display="advanced" Required="false" Mask="false">info</Config>
+  <Config Name="Data directory" Target="/data" Default="/mnt/user/appdata/sphere86/data" Mode="rw" Description="Persistente Daten (DB, VMs, ROMs, Cache)." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/sphere86/data</Config>
+  <Config Name="Shared image library (optional)" Target="/library" Default="/mnt/user/appdata/sphere86/library" Mode="ro" Description="Optional; read-only Medienbibliothek." Type="Path" Display="advanced" Required="false" Mask="false">/mnt/user/appdata/sphere86/library</Config>
+  <Config Name="/dev/net/tun" Target="/dev/net/tun" Default="/dev/net/tun" Mode="rw" Description="Für TAP/Bridge-Networking zwischen VMs." Type="Device" Display="always" Required="true" Mask="false">/dev/net/tun</Config>
+  <Config Name="/dev/dri (optional GPU)" Target="/dev/dri" Default="/dev/dri" Mode="rw" Description="Optional: DRI/GPU; entfernen wenn nicht vorhanden." Type="Device" Display="advanced" Required="false" Mask="false">/dev/dri</Config>
+  <Changes>### 2026-03-28
+- Erstes Unraid-Template (Engine) für Docker Hub `soupboss99/sphere86:engine-latest`</Changes>
+</Container>

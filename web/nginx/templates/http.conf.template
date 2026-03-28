@@ -12,7 +12,7 @@ server {
     # API proxy → backend FastAPI
     # -----------------------------------------------------------------
     location /api/ {
-        proxy_pass http://engine:8000/api/;
+        proxy_pass http://${ENGINE_HOST}:8000/api/;
         proxy_http_version 1.1;
         proxy_set_header Host $http_host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -26,7 +26,7 @@ server {
     # noVNC WebSocket proxy → runner
     # -----------------------------------------------------------------
     location ~ ^/vnc/[^/]+/websockify$ {
-        proxy_pass http://engine:8001;
+        proxy_pass http://${ENGINE_HOST}:8001;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
@@ -39,7 +39,7 @@ server {
     # Audio stream proxy → runner
     # -----------------------------------------------------------------
     location ~ ^/vms/[^/]+/audio$ {
-        proxy_pass http://engine:8001;
+        proxy_pass http://${ENGINE_HOST}:8001;
         proxy_http_version 1.1;
         proxy_set_header Host $http_host;
         proxy_buffering off;

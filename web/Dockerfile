@@ -26,18 +26,25 @@ RUN wget -q -O /tmp/novnc.tar.gz \
 # ── Stage 2: Nginx with built assets ──────────────────────────────────────
 FROM nginx:1.25-alpine
 
+LABEL org.opencontainers.image.source="https://github.com/Buffer379x/Sphere86"
+LABEL org.opencontainers.image.title="Sphere86 Web"
+LABEL org.opencontainers.image.icon="https://raw.githubusercontent.com/Buffer379x/Sphere86/main/docs/logo/logo.png"
+
 RUN apk add --no-cache tzdata
 
 # Remove default nginx config
 RUN rm /etc/nginx/conf.d/default.conf
 
-# Copy nginx config (from the project root bind mount in compose)
-# The main nginx.conf is mounted at runtime from ../nginx/nginx.conf
-# so we just need the built files here.
+# TLS mount point (optional); empty dir → HTTP-only until certs are mounted
+RUN mkdir -p /etc/nginx/certs
+
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Bake in the startup script that selects and renders the server block template.
-# Templates themselves are mounted at runtime (nginx/templates/ → /etc/nginx/Sphere86-templates/).
+# Reverse-proxy + SPA routing (same paths as docker-compose used to bind-mount)
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
+COPY nginx/templates /etc/nginx/Sphere86-templates
+
+# Renders http/https server block from templates at container start
 COPY nginx-entrypoint.sh /docker-entrypoint.d/05-ssl-config.sh
 RUN chmod +x /docker-entrypoint.d/05-ssl-config.sh
 

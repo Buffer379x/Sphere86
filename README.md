@@ -125,6 +125,7 @@ All variables live in `.env` and are passed through `docker-compose.yml`.
 | `WEB_PORT` | `80` | Host port for HTTP. |
 | `HTTPS_PORT` | `443` | Host port for HTTPS (only used if enabled in compose + certs exist). |
 | `SERVER_NAME` | `_` | nginx `server_name`. |
+| `ENGINE_HOST` | `engine` | Nginx upstream for API/runner: Docker service name, container name, or IP (ports 8000/8001). |
 | `SSL_CERTS_DIR` | *(empty)* | If set, must contain `fullchain.pem` and `privkey.pem`. Enables HTTPS + redirect. |
 
 ### Auth bootstrap

@@ -2,6 +2,9 @@ FROM ubuntu:22.04
 
 LABEL maintainer="Sphere86"
 LABEL description="Sphere86 Engine (FastAPI Backend + 86Box Runner Manager)"
+LABEL org.opencontainers.image.source="https://github.com/Buffer379x/Sphere86"
+LABEL org.opencontainers.image.title="Sphere86 Engine"
+LABEL org.opencontainers.image.icon="https://raw.githubusercontent.com/Buffer379x/Sphere86/main/docs/logo/logo.png"
 
 ENV DEBIAN_FRONTEND=noninteractive
 

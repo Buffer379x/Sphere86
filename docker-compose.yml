@@ -39,6 +39,7 @@ services:
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Europe/Berlin}
       - SERVER_NAME=${SERVER_NAME:-_}
+      - ENGINE_HOST=${ENGINE_HOST:-engine}
       - CERTS_DIR=/etc/nginx/certs
     networks:
       private: {}
@@ -49,8 +50,7 @@ services:
       engine:
         condition: service_healthy
     volumes:
-      - ./web/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./web/nginx/templates:/etc/nginx/Sphere86-templates:ro
+      # Optional: TLS certs (fullchain.pem + privkey.pem). Nginx config is baked into the image.
       - ${SSL_CERTS_DIR:-./web/nginx/certs}:/etc/nginx/certs:ro
     healthcheck:
       test: [ "CMD-SHELL", "wget -qO- http://localhost/ > /dev/null || exit 1" ]
